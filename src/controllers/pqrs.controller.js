@@ -1,31 +1,60 @@
 const Pqrs = require('../models/Pqrs');
-const Usuario = require('../models/Usuario');
 
 async function crearPqrs(req, res) {
   try {
-    const { tipo, descripcion, fecha_evento, usuario_id } = req.body;
+    const {
+      sede,
+      fecha_evento,
+      medio,
+      tipo,
+      tipo_documento,
+      numero_documento,
+      nombre_solicitante,
+      celular,
+      telefono_fijo,
+      correo_electronico,
+      es_mismo_paciente,
+      descripcion,
+      usuario_id,
+    } = req.body;
 
-    if (!tipo || !descripcion || !fecha_evento || !usuario_id) {
-      return res.status(400).json({
-        exito: false,
-        mensaje: 'Faltan campos obligatorios: tipo, descripcion, fecha_evento, usuario_id.',
-      });
+    const camposObligatorios = {
+      sede, fecha_evento, medio, tipo, tipo_documento,
+      numero_documento, nombre_solicitante, celular,
+      correo_electronico, descripcion,
+    };
+
+    for (const [campo, valor] of Object.entries(camposObligatorios)) {
+      if (!valor) {
+        return res.status(400).json({
+          exito: false,
+          mensaje: `El campo '${campo}' es obligatorio.`,
+        });
+      }
     }
 
-    const usuarioExiste = await Usuario.findByPk(usuario_id);
-    if (!usuarioExiste) {
-      return res.status(404).json({
+    if (es_mismo_paciente === undefined || es_mismo_paciente === null) {
+      return res.status(400).json({
         exito: false,
-        mensaje: `No existe un usuario con id ${usuario_id}.`,
+        mensaje: `El campo 'es_mismo_paciente' es obligatorio.`,
       });
     }
 
     const nuevoPqrs = await Pqrs.create({
       radicado: 'TEMP',
-      tipo,
-      descripcion,
+      sede,
       fecha_evento,
-      usuario_id,
+      medio,
+      tipo,
+      tipo_documento,
+      numero_documento,
+      nombre_solicitante,
+      celular,
+      telefono_fijo,
+      correo_electronico,
+      es_mismo_paciente,
+      descripcion,
+      usuario_id: usuario_id || null,
     });
 
     const anio = new Date().getFullYear();
@@ -33,7 +62,6 @@ async function crearPqrs(req, res) {
     nuevoPqrs.radicado = radicadoFinal;
     await nuevoPqrs.save();
 
-  
     return res.status(201).json({
       exito: true,
       mensaje: 'PQRS registrado correctamente.',
