@@ -1,0 +1,12 @@
+# Dependencias instaladas (se reinstalan con "npm install", no se comparten)
+node_modules/
+
+# Variables de entorno (contiene contraseñas, nunca se comparte ni se sube a GitHub)
+.env
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
