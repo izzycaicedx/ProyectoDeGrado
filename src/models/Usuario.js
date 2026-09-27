@@ -1,7 +1,3 @@
-// ============================================================
-// CAPA: Modelo — tabla "usuarios"
-// ============================================================
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 

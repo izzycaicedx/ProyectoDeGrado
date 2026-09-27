@@ -1,12 +1,3 @@
-// ============================================================
-// CAPA: Modelo (la "M" de MVC)
-// Este archivo representa la tabla "roles" de PostgreSQL como
-// un objeto de JavaScript. Es el primer modelo que creamos,
-// como ejemplo — en el Sprint 2 y siguientes crearemos los
-// modelos de Usuario, Pqrs, Categoria, etc., siguiendo este
-// mismo patrón.
-// ============================================================
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
