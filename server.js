@@ -4,6 +4,7 @@ const cors = require('cors');
 const { probarConexion } = require('./src/config/database');
 const testRoutes = require('./src/routes/test.routes');
 const pqrsRoutes = require('./src/routes/pqrs.routes');
+const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', testRoutes);
 app.use('/api', pqrsRoutes);
+app.use('/api', authRoutes);
 
 const PORT = process.env.PORT || 3000;
 

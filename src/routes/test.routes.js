@@ -1,7 +1,3 @@
-// ============================================================
-// CAPA: Rutas (parte de la "V"/entrada de la arquitectura MVC
-// del lado del servidor — define qué URL activa qué controlador)
-// ============================================================
 
 const express = require('express');
 const router = express.Router();
