@@ -1,6 +1,6 @@
 const Pqrs = require('../models/Pqrs');
 
-async function crearPqrs(req, res) {
+const crearPqrs = async (req, res) => {
   try {
     const {
       sede,
@@ -14,29 +14,27 @@ async function crearPqrs(req, res) {
       telefono_fijo,
       correo_electronico,
       es_mismo_paciente,
-      descripcion,
-      usuario_id,
+      nombre_acompanante,
+      parentesco_acompanante,
+      telefono_acompanante,
+      descripcion
     } = req.body;
 
-    const camposObligatorios = {
-      sede, fecha_evento, medio, tipo, tipo_documento,
-      numero_documento, nombre_solicitante, celular,
-      correo_electronico, descripcion,
-    };
-
-    for (const [campo, valor] of Object.entries(camposObligatorios)) {
-      if (!valor) {
-        return res.status(400).json({
-          exito: false,
-          mensaje: `El campo '${campo}' es obligatorio.`,
-        });
-      }
-    }
-
-    if (es_mismo_paciente === undefined || es_mismo_paciente === null) {
+    if (!sede || !fecha_evento || !medio || !tipo || !tipo_documento ||
+        !numero_documento || !nombre_solicitante || !celular ||
+        !correo_electronico || es_mismo_paciente === undefined || !descripcion) {
       return res.status(400).json({
         exito: false,
-        mensaje: `El campo 'es_mismo_paciente' es obligatorio.`,
+        mensaje: 'Faltan campos obligatorios por diligenciar.',
+        datos: null
+      });
+    }
+
+    if (es_mismo_paciente === false && !nombre_acompanante) {
+      return res.status(400).json({
+        exito: false,
+        mensaje: 'Debe indicar el nombre completo del acompañante.',
+        datos: null
       });
     }
 
@@ -50,53 +48,57 @@ async function crearPqrs(req, res) {
       numero_documento,
       nombre_solicitante,
       celular,
-      telefono_fijo,
+      telefono_fijo: telefono_fijo || null,
       correo_electronico,
       es_mismo_paciente,
+      nombre_acompanante: es_mismo_paciente === false ? nombre_acompanante : null,
+      parentesco_acompanante: es_mismo_paciente === false ? parentesco_acompanante : null,
+      telefono_acompanante: es_mismo_paciente === false ? telefono_acompanante : null,
       descripcion,
-      usuario_id: usuario_id || null,
+      estado: 'Recibido'
     });
 
     const anio = new Date().getFullYear();
-    const radicadoFinal = `PQRS-${anio}-${String(nuevoPqrs.id).padStart(4, '0')}`;
-    nuevoPqrs.radicado = radicadoFinal;
+    const radicado = `PQRS-${anio}-${String(nuevoPqrs.id).padStart(4, '0')}`;
+
+    nuevoPqrs.radicado = radicado;
     await nuevoPqrs.save();
 
     return res.status(201).json({
       exito: true,
-      mensaje: 'PQRS registrado correctamente.',
-      datos: nuevoPqrs,
+      mensaje: 'PQRS radicado exitosamente.',
+      datos: nuevoPqrs
     });
+
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al registrar el PQRS.',
-      detalle: error.message,
+      mensaje: 'Error al radicar el PQRS.',
+      datos: error.message
     });
   }
-}
+};
 
-async function listarPqrs(req, res) {
+const listarPqrs = async (req, res) => {
   try {
-    const registros = await Pqrs.findAll({
-      order: [['fecha_registro', 'DESC']],
-    });
-    return res.json({
+    const pqrsList = await Pqrs.findAll({ order: [['fecha_registro', 'DESC']] });
+    return res.status(200).json({
       exito: true,
-      cantidad: registros.length,
-      datos: registros,
+      mensaje: 'Listado de PQRS obtenido correctamente.',
+      datos: pqrsList
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al consultar los PQRS.',
-      detalle: error.message,
+      mensaje: 'Error al obtener el listado de PQRS.',
+      datos: error.message
     });
   }
-}
+};
 
-module.exports = { crearPqrs, listarPqrs };
-async function obtenerPqrsPorId(req, res) {
+const obtenerPqrsPorId = async (req, res) => {
   try {
     const { id } = req.params;
     const pqrs = await Pqrs.findByPk(id);
@@ -104,56 +106,62 @@ async function obtenerPqrsPorId(req, res) {
     if (!pqrs) {
       return res.status(404).json({
         exito: false,
-        mensaje: `No se encontró ningún PQRS con el id ${id}.`,
+        mensaje: 'PQRS no encontrado.',
+        datos: null
       });
     }
 
-    return res.json({ exito: true, datos: pqrs });
+    return res.status(200).json({
+      exito: true,
+      mensaje: 'PQRS obtenido correctamente.',
+      datos: pqrs
+    });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       exito: false,
-      mensaje: 'Error al consultar el PQRS.',
-      detalle: error.message,
+      mensaje: 'Error al obtener el PQRS.',
+      datos: error.message
     });
   }
-}
+};
 
-async function actualizarEstado(req, res) {
+const actualizarEstado = async (req, res) => {
   try {
     const { id } = req.params;
     const { estado } = req.body;
 
-    const estadosValidos = ['Recibido', 'En clasificacion', 'En tramite', 'Vencido', 'Cerrado'];
-    if (!estado || !estadosValidos.includes(estado)) {
-      return res.status(400).json({
-        exito: false,
-        mensaje: `El estado debe ser uno de: ${estadosValidos.join(', ')}.`,
-      });
-    }
-
     const pqrs = await Pqrs.findByPk(id);
+
     if (!pqrs) {
       return res.status(404).json({
         exito: false,
-        mensaje: `No se encontró ningún PQRS con el id ${id}.`,
+        mensaje: 'PQRS no encontrado.',
+        datos: null
       });
     }
 
     pqrs.estado = estado;
     await pqrs.save();
 
-    return res.json({
+    return res.status(200).json({
       exito: true,
-      mensaje: 'Estado actualizado correctamente.',
-      datos: pqrs,
+      mensaje: 'Estado del PQRS actualizado correctamente.',
+      datos: pqrs
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       exito: false,
       mensaje: 'Error al actualizar el estado del PQRS.',
-      detalle: error.message,
+      datos: error.message
     });
   }
-}
+};
 
-module.exports = { crearPqrs, listarPqrs, obtenerPqrsPorId, actualizarEstado };
+module.exports = {
+  crearPqrs,
+  listarPqrs,
+  obtenerPqrsPorId,
+  actualizarEstado
+};
