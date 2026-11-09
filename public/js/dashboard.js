@@ -6,6 +6,8 @@ if (!token) { location.href = '/login.html'; }
 const ESTADOS = ['Recibido', 'En clasificacion', 'En tramite', 'Vencido', 'Cerrado'];
 let pqrs = [];
 let responsables = [];
+let categorias = [];
+let asignadas = {};
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -50,6 +52,11 @@ function nombreResponsable(id) {
   return r ? r.nombre : '';
 }
 
+function nombreCategoria(id) {
+  const c = categorias.find(function (x) { return x.id === id; });
+  return c ? c.nombre : '';
+}
+
 function contar(estado) {
   return pqrs.filter(function (p) { return p.estado === estado; }).length;
 }
@@ -87,10 +94,13 @@ function pintarTabla() {
   const texto = document.getElementById('buscar').value.trim().toLowerCase();
   const fEstado = document.getElementById('fEstado').value;
   const fSede = document.getElementById('fSede').value;
+  const fCat = document.getElementById('fCategoria').value;
 
   const lista = pqrs.filter(function (p) {
     if (fEstado && p.estado !== fEstado) return false;
     if (fSede && p.sede !== fSede) return false;
+    if (fCat === 'sin' && asignadas[p.id]) return false;
+    if (fCat && fCat !== 'sin' && String(asignadas[p.id]) !== fCat) return false;
     if (texto) {
       const base = (p.radicado + ' ' + p.nombre_solicitante + ' ' + p.numero_documento).toLowerCase();
       if (base.indexOf(texto) === -1) return false;
@@ -104,6 +114,9 @@ function pintarTabla() {
     const opcResp = '<option value="">Sin asignar</option>' + responsables.map(function (r) {
       return '<option value="' + r.id + '"' + (r.id === p.asignado_a ? ' selected' : '') + '>' + esc(r.nombre) + '</option>';
     }).join('');
+    const opcCat = '<option value="">Sin categoría</option>' + categorias.map(function (c) {
+      return '<option value="' + c.id + '"' + (c.id === asignadas[p.id] ? ' selected' : '') + '>' + esc(c.nombre) + '</option>';
+    }).join('');
     const opcEstado = ESTADOS.map(function (e) {
       return '<option value="' + e + '"' + (e === p.estado ? ' selected' : '') + '>' + e + '</option>';
     }).join('');
@@ -115,6 +128,7 @@ function pintarTabla() {
       '<td>' + fechaCorta(p.fecha_registro) + '</td>' +
       celdaVence(p) +
       '<td><select data-id="' + p.id + '" data-campo="asignar">' + opcResp + '</select></td>' +
+      '<td><select data-id="' + p.id + '" data-campo="categoria">' + opcCat + '</select></td>' +
       '<td><select data-id="' + p.id + '" data-campo="estado">' + opcEstado + '</select></td>' +
       '<td><button class="ver" data-id="' + p.id + '" data-campo="ver">Ver</button></td>' +
       '</tr>';
@@ -130,19 +144,27 @@ function reemplazar(actualizado) {
 
 async function cambiar(id, campo, valor) {
   try {
-    let actualizado;
-    if (campo === 'asignar') {
-      actualizado = await api('/pqrs/' + id + '/asignar', {
+    if (campo === 'categoria') {
+      const r = await api('/pqrs/' + id + '/categoria', {
         method: 'PUT',
-        body: JSON.stringify({ asignado_a: valor ? Number(valor) : null })
+        body: JSON.stringify({ categoria_id: valor ? Number(valor) : null })
       });
+      if (r.categoria_id) { asignadas[id] = r.categoria_id; } else { delete asignadas[id]; }
     } else {
-      actualizado = await api('/pqrs/' + id, {
-        method: 'PUT',
-        body: JSON.stringify({ estado: valor })
-      });
+      let actualizado;
+      if (campo === 'asignar') {
+        actualizado = await api('/pqrs/' + id + '/asignar', {
+          method: 'PUT',
+          body: JSON.stringify({ asignado_a: valor ? Number(valor) : null })
+        });
+      } else {
+        actualizado = await api('/pqrs/' + id, {
+          method: 'PUT',
+          body: JSON.stringify({ estado: valor })
+        });
+      }
+      reemplazar(actualizado);
     }
-    reemplazar(actualizado);
   } catch (e) {
     if (e.message !== 'sesion') mostrarError(e.message);
   }
@@ -155,6 +177,7 @@ function verDetalle(id) {
   function fila(a, b) { return '<div class="fila"><span>' + a + '</span><span>' + esc(b || '-') + '</span></div>'; }
   let html = '<h2>' + esc(p.radicado) + '</h2>' +
     fila('Tipo', p.tipo) + fila('Estado', p.estado) + fila('Sede', p.sede) +
+    fila('Categoría', nombreCategoria(asignadas[p.id]) || 'Sin categoría') +
     fila('Medio', p.medio) + fila('Fecha del evento', p.fecha_evento) +
     fila('Fecha límite', p.fecha_limite) +
     fila('Responsable', nombreResponsable(p.asignado_a) || 'Sin asignar') +
@@ -176,7 +199,7 @@ function verDetalle(id) {
 
 document.getElementById('filas').addEventListener('change', function (e) {
   const campo = e.target.getAttribute('data-campo');
-  if (campo === 'asignar' || campo === 'estado') {
+  if (campo === 'asignar' || campo === 'estado' || campo === 'categoria') {
     cambiar(Number(e.target.getAttribute('data-id')), campo, e.target.value);
   }
 });
@@ -196,8 +219,9 @@ document.getElementById('modal').addEventListener('click', function (e) {
 document.getElementById('buscar').addEventListener('input', pintarTabla);
 document.getElementById('fEstado').addEventListener('change', pintarTabla);
 document.getElementById('fSede').addEventListener('change', pintarTabla);
+document.getElementById('fCategoria').addEventListener('change', pintarTabla);
 document.getElementById('salir').addEventListener('click', function () {
-    localStorage.removeItem('token');
+  localStorage.removeItem('token');
   location.href = '/login.html';
 });
 
@@ -207,9 +231,24 @@ document.getElementById('fEstado').innerHTML += ESTADOS.map(function (e) {
 
 async function iniciar() {
   try {
-    const resultados = await Promise.all([api('/pqrs'), api('/responsables')]);
-    pqrs = resultados[0];
-    responsables = resultados[1];
+    const r = await Promise.all([
+      api('/pqrs'),
+      api('/responsables'),
+      api('/categorias'),
+      api('/categorias/asignadas')
+    ]);
+    pqrs = r[0];
+    responsables = r[1];
+    categorias = r[2];
+    asignadas = {};
+    r[3].forEach(function (a) { asignadas[a.pqrs_id] = a.categoria_id; });
+
+    document.getElementById('fCategoria').innerHTML +=
+      '<option value="sin">Sin categoría</option>' +
+      categorias.map(function (c) {
+        return '<option value="' + c.id + '">' + esc(c.nombre) + '</option>';
+      }).join('');
+
     pintarTodo();
   } catch (e) {
     if (e.message !== 'sesion') mostrarError(e.message);
