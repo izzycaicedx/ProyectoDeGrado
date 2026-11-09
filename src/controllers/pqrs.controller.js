@@ -1,4 +1,5 @@
 const Pqrs = require('../models/Pqrs');
+const { calcularFechaLimite, marcarVencidos } = require('../utils/plazos');
 
 const crearPqrs = async (req, res) => {
   try {
@@ -51,11 +52,12 @@ const crearPqrs = async (req, res) => {
       telefono_fijo: telefono_fijo || null,
       correo_electronico,
       es_mismo_paciente,
-      nombre_acompanante: es_mismo_paciente === false ? nombre_acompanante : null,
-      parentesco_acompanante: es_mismo_paciente === false ? parentesco_acompanante : null,
-      telefono_acompanante: es_mismo_paciente === false ? telefono_acompanante : null,
+      nombre_acompanante: es_mismo_paciente === false ? (nombre_acompanante || null) : null,
+      parentesco_acompanante: es_mismo_paciente === false ? (parentesco_acompanante || null) : null,
+      telefono_acompanante: es_mismo_paciente === false ? (telefono_acompanante || null) : null,
       descripcion,
-      estado: 'Recibido'
+      estado: 'Recibido',
+      fecha_limite: calcularFechaLimite(tipo)
     });
 
     const anio = new Date().getFullYear();
@@ -72,6 +74,15 @@ const crearPqrs = async (req, res) => {
 
   } catch (error) {
     console.error(error);
+
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        exito: false,
+        mensaje: 'Hay datos con un valor no permitido.',
+        datos: error.errors.map(e => ({ campo: e.path, valor: e.value, detalle: e.message }))
+      });
+    }
+
     return res.status(500).json({
       exito: false,
       mensaje: 'Error al radicar el PQRS.',
@@ -82,6 +93,7 @@ const crearPqrs = async (req, res) => {
 
 const listarPqrs = async (req, res) => {
   try {
+    await marcarVencidos();
     const pqrsList = await Pqrs.findAll({ order: [['fecha_registro', 'DESC']] });
     return res.status(200).json({
       exito: true,
@@ -126,6 +138,39 @@ const obtenerPqrsPorId = async (req, res) => {
   }
 };
 
+const consultarPorRadicado = async (req, res) => {
+  try {
+    const { radicado } = req.params;
+
+    // Consulta pública: solo se devuelven campos no sensibles
+    const pqrs = await Pqrs.findOne({
+      where: { radicado: radicado.trim().toUpperCase() },
+      attributes: ['radicado', 'tipo', 'sede', 'estado', 'fecha_evento', 'fecha_registro']
+    });
+
+    if (!pqrs) {
+      return res.status(404).json({
+        exito: false,
+        mensaje: 'No se encontró un PQRS con ese número de radicado.',
+        datos: null
+      });
+    }
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: 'PQRS encontrado.',
+      datos: pqrs
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      exito: false,
+      mensaje: 'Error al consultar el PQRS.',
+      datos: error.message
+    });
+  }
+};
+
 const actualizarEstado = async (req, res) => {
   try {
     const { id } = req.params;
@@ -159,9 +204,50 @@ const actualizarEstado = async (req, res) => {
   }
 };
 
+const asignarPqrs = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { asignado_a } = req.body;
+
+    const pqrs = await Pqrs.findByPk(id);
+
+    if (!pqrs) {
+      return res.status(404).json({
+        exito: false,
+        mensaje: 'PQRS no encontrado.',
+        datos: null
+      });
+    }
+
+    pqrs.asignado_a = asignado_a || null;
+
+    // Al asignarlo por primera vez, pasa de "Recibido" a "En clasificacion"
+    if (asignado_a && pqrs.estado === 'Recibido') {
+      pqrs.estado = 'En clasificacion';
+    }
+
+    await pqrs.save();
+
+    return res.status(200).json({
+      exito: true,
+      mensaje: 'PQRS asignado correctamente.',
+      datos: pqrs
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      exito: false,
+      mensaje: 'Error al asignar el PQRS.',
+      datos: error.message
+    });
+  }
+};
+
 module.exports = {
   crearPqrs,
   listarPqrs,
   obtenerPqrsPorId,
-  actualizarEstado
+  consultarPorRadicado,
+  actualizarEstado,
+  asignarPqrs
 };

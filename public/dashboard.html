@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de PQRS | AIREC Grupo Médico</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<header>
+  <h1>Panel de PQRS · AIREC</h1>
+  <button type="button" id="salir">Cerrar sesión</button>
+</header>
+<main>
+  <div id="msg" class="msg oculto"></div>
+
+  <div class="cards">
+    <div class="card"><b id="cTotal">0</b><span>Total</span></div>
+    <div class="card rosa"><b id="cSin">0</b><span>Sin asignar</span></div>
+    <div class="card"><b id="cClasif">0</b><span>En clasificación</span></div>
+    <div class="card"><b id="cTramite">0</b><span>En trámite</span></div>
+    <div class="card verde"><b id="cVencido">0</b><span>Vencidos</span></div>
+    <div class="card gris"><b id="cCerrado">0</b><span>Cerrados</span></div>
+  </div>
+
+  <div class="filtros">
+    <input type="text" id="buscar" placeholder="Buscar por radicado, nombre o documento">
+    <select id="fEstado"><option value="">Todos los estados</option></select>
+    <select id="fSede">
+      <option value="">Todas las sedes</option>
+      <option value="Principal">Principal</option>
+      <option value="Terapias">Terapias</option>
+      <option value="Clinicas">Clínicas</option>
+    </select>
+  </div>
+
+  <div class="tabla">
+    <table>
+      <thead>
+        <tr>
+          <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Sede</th>
+          <th>Fecha</th><th>Vence</th><th>Responsable</th><th>Estado</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="filas"></tbody>
+    </table>
+    <div id="vacio" class="vacio oculto">No hay PQRS para mostrar.</div>
+  </div>
+</main>
+
+<div id="modal" class="oculto">
+  <div class="box" id="detalle"></div>
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>
