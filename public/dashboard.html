@@ -4,59 +4,107 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel de PQRS | AIREC Grupo Médico</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
-<header>
-  <div class="encabezado-dashboard">
+<div class="app-shell">
+  <aside class="sidebar">
     <a href="index.html" class="logo-dashboard" title="Ir al formulario de PQRS" aria-label="Ir al formulario de PQRS">
       <img src="https://airec.co/wp-content/uploads/2023/04/Logo-Airec-2023.gif" alt="AIREC Grupo Médico">
     </a>
-    <h1>Panel de PQRS · AIREC</h1>
-  </div>
-  <div class="nav">
-    <a class="enlace-nav" href="estadisticas.html">Estadísticas</a>
-    <button type="button" id="salir">Cerrar sesión</button>
-  </div>
-</header>
-<main>
-  <div id="msg" class="msg oculto"></div>
+    <div class="sidebar-brand">
+      <span class="brand-name">AIREC</span>
+      <span class="brand-caption">GRUPO MÉDICO</span>
+    </div>
 
-  <div class="cards">
-    <div class="card"><b id="cTotal">0</b><span>Total</span></div>
-    <div class="card rosa"><b id="cSin">0</b><span>Sin asignar</span></div>
-    <div class="card"><b id="cClasif">0</b><span>En clasificación</span></div>
-    <div class="card"><b id="cTramite">0</b><span>En trámite</span></div>
-    <div class="card verde"><b id="cVencido">0</b><span>Vencidos</span></div>
-    <div class="card gris"><b id="cCerrado">0</b><span>Cerrados</span></div>
-  </div>
+    <div class="sidebar-label">GESTIÓN</div>
+    <nav class="sidebar-nav" aria-label="Navegación principal">
+      <a class="sidebar-link active" href="dashboard.html" aria-current="page">
+        <span class="nav-icon">▦</span><span>Panel de PQRS</span>
+      </a>
+      <a class="sidebar-link" href="estadisticas.html">
+        <span class="nav-icon">▥</span><span>Estadísticas</span>
+      </a>
+      <a class="sidebar-link" href="index.html">
+        <span class="nav-icon">＋</span><span>Registrar PQRS</span>
+      </a>
+    </nav>
 
-  <div class="filtros">
-    <input type="text" id="buscar" placeholder="Buscar por radicado, nombre o documento">
-    <select id="fEstado"><option value="">Todos los estados</option></select>
-    <select id="fCategoria"><option value="">Todas las categorías</option></select>
-    <select id="fSede">
-      <option value="">Todas las sedes</option>
-      <option value="Principal">Principal</option>
-      <option value="Terapias">Terapias</option>
-      <option value="Clinicas">Clínicas</option>
-    </select>
-  </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-note">
+        <span class="note-dot"></span>
+        <div><strong>Gestión y seguimiento</strong><small>Atención centrada en las personas</small></div>
+      </div>
+      <button type="button" id="salir" class="logout-button">
+        <span class="logout-icon">↗</span>Cerrar sesión
+      </button>
+    </div>
+  </aside>
 
-  <div class="tabla">
-    <table>
-      <thead>
-        <tr>
-          <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Sede</th>
-          <th>Fecha</th><th>Vence</th><th>Responsable</th><th>Categoría</th><th>Estado</th><th></th>
-        </tr>
-      </thead>
-      <tbody id="filas"></tbody>
-    </table>
-    <div id="vacio" class="vacio oculto">No hay PQRS para mostrar.</div>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb"><span>Inicio</span><span class="breadcrumb-separator">/</span><strong>Panel de PQRS</strong></div>
+      <div class="topbar-tag"><span class="status-dot"></span>Panel de gestión</div>
+    </header>
+
+    <main>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">AIREC · EXPERIENCIA DEL USUARIO</p>
+          <h1>Panel de PQRS</h1>
+          <p class="page-description">Consulta, organiza y realiza seguimiento a las solicitudes de los usuarios.</p>
+        </div>
+        <a class="new-request" href="index.html"><span>＋</span> Nueva PQRS</a>
+      </div>
+
+      <div id="msg" class="msg oculto" role="alert"></div>
+
+      <section class="metrics-section" aria-label="Resumen de solicitudes">
+        <div class="section-heading"><div><h2>Resumen general</h2><p>Estado actual de las solicitudes registradas</p></div></div>
+        <div class="cards">
+          <div class="card card-total"><div class="card-top"><span class="metric-label">Total de PQRS</span><span class="metric-icon">▦</span></div><b id="cTotal">0</b><span class="metric-foot">Solicitudes registradas</span></div>
+          <div class="card card-pending"><div class="card-top"><span class="metric-label">Sin asignar</span><span class="metric-icon">◷</span></div><b id="cSin">0</b><span class="metric-foot">Pendientes de responsable</span></div>
+          <div class="card card-classify"><div class="card-top"><span class="metric-label">En clasificación</span><span class="metric-icon">⌕</span></div><b id="cClasif">0</b><span class="metric-foot">Por organizar</span></div>
+          <div class="card card-process"><div class="card-top"><span class="metric-label">En trámite</span><span class="metric-icon">↗</span></div><b id="cTramite">0</b><span class="metric-foot">En proceso de atención</span></div>
+          <div class="card card-overdue"><div class="card-top"><span class="metric-label">Vencidos</span><span class="metric-icon">!</span></div><b id="cVencido">0</b><span class="metric-foot">Requieren revisión</span></div>
+          <div class="card card-closed"><div class="card-top"><span class="metric-label">Cerrados</span><span class="metric-icon">✓</span></div><b id="cCerrado">0</b><span class="metric-foot">Solicitudes finalizadas</span></div>
+        </div>
+      </section>
+
+      <section class="requests-section">
+        <div class="section-heading requests-heading"><div><h2>Solicitudes registradas</h2><p>Busca y filtra para encontrar una PQRS rápidamente.</p></div><span class="table-caption">GESTIÓN DE SOLICITUDES</span></div>
+        <div class="filtros">
+          <label class="search-field"><span>⌕</span><input type="text" id="buscar" placeholder="Buscar por radicado, nombre o documento" aria-label="Buscar solicitudes"></label>
+          <select id="fEstado" aria-label="Filtrar por estado"><option value="">Todos los estados</option></select>
+          <select id="fCategoria" aria-label="Filtrar por categoría"><option value="">Todas las categorías</option></select>
+          <select id="fSede" aria-label="Filtrar por sede">
+            <option value="">Todas las sedes</option>
+            <option value="Principal">Principal</option>
+            <option value="Terapias">Terapias</option>
+            <option value="Clinicas">Clínicas</option>
+          </select>
+        </div>
+
+        <div class="tabla">
+          <table>
+            <thead>
+              <tr>
+                <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Sede</th>
+                <th>Fecha</th><th>Vence</th><th>Responsable</th><th>Categoría</th><th>Estado</th><th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="filas"></tbody>
+          </table>
+          <div id="vacio" class="vacio oculto">No hay PQRS para mostrar.</div>
+        </div>
+      </section>
+      <footer class="page-footer">AIREC Grupo Médico <span>·</span> Gestión de PQRS</footer>
+    </main>
   </div>
-</main>
+</div>
 
 <div id="modal" class="oculto">
   <div class="box" id="detalle"></div>
