@@ -87,3 +87,34 @@
   .grafica.ancha { grid-column: auto; }
   .lienzo { height: 260px; }
 }
+
+.encabezado-estadisticas {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-dashboard {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.logo-dashboard img {
+  display: block;
+  width: 54px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.logo-dashboard:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .encabezado-estadisticas { gap: 10px; }
+  .logo-dashboard img { width: 44px; height: 36px; }
+  header h1 { font-size: 17px; }
+}
