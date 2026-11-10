@@ -16,7 +16,7 @@ const obtenerEstadisticas = async (req, res) => {
     if (desde || hasta) {
       const fechaValida = (valor) =>
         typeof valor === 'string' &&
-        /^\\d{4}-\\d{2}-\\d{2}$/.test(valor) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(valor) &&
         !Number.isNaN(Date.parse(valor + 'T00:00:00Z')) &&
         new Date(valor + 'T00:00:00Z').toISOString().slice(0, 10) === valor;
 
