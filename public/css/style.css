@@ -1,11 +1,11 @@
 :root {
-  --navy: #2E3192;
-  --pink: #E6177D;
-  --pink-soft: #FBE6F0;
+  --navy: #172b4d;
+  --pink: #d95b91;
+  --pink-soft: #fbf0f5;
   --text: #1F2430;
   --text-light: #6B7280;
-  --bg: #FAFAFB;
-  --field-bg: #F2F3F5;
+  --bg: #f5f7fa;
+  --field-bg: #f8fafc;
   --border-hairline: #E5E7EB;
 }
 
@@ -14,7 +14,7 @@
 body {
   margin: 0;
   background: var(--bg);
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: var(--text);
 }
 
@@ -67,7 +67,7 @@ form, .success-msg {
 }
 
 .intro h1 {
-  font-family: 'Lora', serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 600;
   font-size: 32px;
   color: var(--navy);
@@ -107,7 +107,7 @@ form, .success-msg {
 }
 
 .section-heading h2 {
-  font-family: 'Lora', serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 19px;
   font-weight: 600;
   margin: 0;
@@ -157,7 +157,7 @@ form, .success-msg {
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 15px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: var(--text);
   transition: border-color 0.15s, background 0.15s;
 }
@@ -171,7 +171,7 @@ form, .success-msg {
 .textarea {
   resize: vertical;
   min-height: 140px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .pill-radio {
@@ -186,7 +186,7 @@ form, .success-msg {
   border-radius: 10px;
   border: 1.5px solid var(--border-hairline);
   background: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--text-light);
@@ -210,7 +210,7 @@ form, .success-msg {
 }
 
 .acompanante-block h3 {
-  font-family: 'Lora', serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--navy);
@@ -273,13 +273,13 @@ form, .success-msg {
 }
 
 .success-msg h2 {
-  font-family: 'Lora', serif;
+  font-family: 'Manrope', sans-serif;
   color: var(--navy);
   margin-top: 0;
 }
 
 .radicado {
-  font-family: 'Lora', serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: var(--pink);
@@ -296,3 +296,4 @@ form, .success-msg {
     align-items: flex-start;
   }
 }
+.content{padding-top:38px}.intro{width:100%;max-width:760px;padding:28px 30px;margin-bottom:24px;border:1px solid var(--border-hairline);border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(28,49,75,.045)}.intro h1{letter-spacing:-.035em}.intro p{margin-bottom:0}.form-section{padding:25px 28px 8px;margin-bottom:16px;border:1px solid var(--border-hairline);border-radius:14px;background:#fff;box-shadow:0 6px 20px rgba(28,49,75,.035)}.section-number{background:#244b78}.field{border:1px solid #e1e7ee;background:#f8fafc}.field:focus{border-color:#8ca8c7;box-shadow:0 0 0 3px rgba(64,111,158,.09)}.pill-option.selected{border-color:var(--pink);background:var(--pink-soft);color:var(--navy)}.acompanante-block{border-left-color:var(--pink);background:#fbf8fa}.submit-btn{background:#244b78;border-radius:9px}.submit-btn:hover{background:#193b63}@media(max-width:640px){.content{padding:22px 14px 50px}.intro{padding:22px 20px}.intro h1{font-size:26px}.form-section{padding:20px 18px 4px}.header-inner{align-items:center}.logo{max-width:165px;height:44px;object-fit:contain}}

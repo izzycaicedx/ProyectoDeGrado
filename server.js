@@ -5,12 +5,13 @@ const { probarConexion } = require('./src/config/database');
 const testRoutes = require('./src/routes/test.routes');
 const pqrsRoutes = require('./src/routes/pqrs.routes');
 const authRoutes = require('./src/routes/auth.routes');
+const estadisticasRoutes = require('./src/routes/estadisticas.routes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); 
+app.use(express.static('public'));
 
 app.get('/', (req, res) => {
   res.json({
@@ -23,7 +24,7 @@ app.get('/', (req, res) => {
 app.use('/api', testRoutes);
 app.use('/api', pqrsRoutes);
 app.use('/api', authRoutes);
-
+app.use('/api', estadisticasRoutes);
 
 const PORT = process.env.PORT || 3000;
 
