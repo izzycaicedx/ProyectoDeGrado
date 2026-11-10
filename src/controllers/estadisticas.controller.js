@@ -1,6 +1,5 @@
 const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
-const { marcarVencidos } = require('../utils/plazos');
 
 function consulta(sql) {
   return sequelize.query(sql, { type: QueryTypes.SELECT });
@@ -8,9 +7,7 @@ function consulta(sql) {
 
 const obtenerEstadisticas = async (req, res) => {
   try {
-    // Así los "Vencidos" salen al día
-    await marcarVencidos();
-
+    // Este controlador es de solo lectura: no modifica estados ni registros.
     const resultados = await Promise.all([
       consulta(
         "SELECT count(*)::int AS total, " +
@@ -23,7 +20,7 @@ const obtenerEstadisticas = async (req, res) => {
       consulta("SELECT estado AS etiqueta, count(*)::int AS total FROM pqrs GROUP BY estado ORDER BY total DESC"),
       consulta("SELECT sede AS etiqueta, count(*)::int AS total FROM pqrs GROUP BY sede ORDER BY total DESC"),
       consulta(
-        "SELECT COALESCE(c.nombre, 'Sin categoría') AS etiqueta, count(*)::int AS total " +
+        "SELECT COALESCE(c.nombre, 'Sin categoría') AS etiqueta, count(DISTINCT p.id)::int AS total " +
         "FROM pqrs p " +
         "LEFT JOIN pqrs_categoria pc ON pc.pqrs_id = p.id " +
         "LEFT JOIN categorias c ON c.id = pc.categoria_id " +
@@ -48,7 +45,7 @@ const obtenerEstadisticas = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error al obtener estadísticas:', error);
     return res.status(500).json({
       exito: false,
       mensaje: 'Error al obtener las estadísticas.',
