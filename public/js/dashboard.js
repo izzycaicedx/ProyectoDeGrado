@@ -61,13 +61,51 @@ function contar(estado) {
   return pqrs.filter(function (p) { return p.estado === estado; }).length;
 }
 
+function obtenerRango(periodo, mes) {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  let desde = null;
+  let hasta = new Date(hoy);
+  hasta.setDate(hasta.getDate() + 1);
+  if (mes) {
+    const partes = mes.split('-').map(Number);
+    desde = new Date(partes[0], partes[1] - 1, 1);
+    hasta = new Date(partes[0], partes[1], 1);
+  } else if (periodo === 'mes') desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  else if (periodo === 'semana') {
+    desde = new Date(hoy);
+    desde.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  } else if (periodo === 'tres') {
+    desde = new Date(hoy);
+    desde.setDate(hoy.getDate() - 2);
+  } else if (periodo === 'noventa') {
+    desde = new Date(hoy);
+    desde.setDate(hoy.getDate() - 89);
+  } else if (periodo === 'anio') desde = new Date(hoy.getFullYear(), 0, 1);
+  return { desde: desde, hasta: hasta };
+}
+
+function fechaEnPeriodo(p) {
+  const rango = obtenerRango(document.getElementById('fPeriodo').value, document.getElementById('fMes').value);
+  if (!rango.desde) return true;
+  const fecha = new Date(p.fecha_registro);
+  if (isNaN(fecha.getTime())) return false;
+  fecha.setHours(0, 0, 0, 0);
+  return fecha >= rango.desde && fecha < rango.hasta;
+}
+
+function pqrsDelPeriodo() {
+  return pqrs.filter(fechaEnPeriodo);
+}
+
 function pintarTarjetas() {
-  document.getElementById('cTotal').textContent = pqrs.length;
-  document.getElementById('cSin').textContent = pqrs.filter(function (p) { return !p.asignado_a && p.estado !== 'Cerrado'; }).length;
-  document.getElementById('cClasif').textContent = contar('En clasificacion');
-  document.getElementById('cTramite').textContent = contar('En tramite');
-  document.getElementById('cVencido').textContent = contar('Vencido');
-  document.getElementById('cCerrado').textContent = contar('Cerrado');
+  const lista = pqrsDelPeriodo();
+  document.getElementById('cTotal').textContent = lista.length;
+  document.getElementById('cSin').textContent = lista.filter(function (p) { return !p.asignado_a && p.estado !== 'Cerrado'; }).length;
+  document.getElementById('cClasif').textContent = lista.filter(function (p) { return p.estado === 'En clasificacion'; }).length;
+  document.getElementById('cTramite').textContent = lista.filter(function (p) { return p.estado === 'En tramite'; }).length;
+  document.getElementById('cVencido').textContent = lista.filter(function (p) { return p.estado === 'Vencido'; }).length;
+  document.getElementById('cCerrado').textContent = lista.filter(function (p) { return p.estado === 'Cerrado'; }).length;
 }
 
 function celdaVence(p) {
@@ -97,6 +135,7 @@ function pintarTabla() {
   const fCat = document.getElementById('fCategoria').value;
 
   const lista = pqrs.filter(function (p) {
+    if (!fechaEnPeriodo(p)) return false;
     if (fEstado && p.estado !== fEstado) return false;
     if (fSede && p.sede !== fSede) return false;
     if (fCat === 'sin' && asignadas[p.id]) return false;
@@ -220,6 +259,8 @@ document.getElementById('buscar').addEventListener('input', pintarTabla);
 document.getElementById('fEstado').addEventListener('change', pintarTabla);
 document.getElementById('fSede').addEventListener('change', pintarTabla);
 document.getElementById('fCategoria').addEventListener('change', pintarTabla);
+document.getElementById('fPeriodo').addEventListener('change', function () { document.getElementById('fMes').value = ''; pintarTodo(); });
+document.getElementById('fMes').addEventListener('change', pintarTodo);
 document.getElementById('salir').addEventListener('click', function () {
   localStorage.removeItem('token');
   location.href = '/login.html';
