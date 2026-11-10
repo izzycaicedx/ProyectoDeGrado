@@ -2,7 +2,7 @@ const API = '/api';
 const token = localStorage.getItem('token');
 if (!token) { location.href = '/login.html'; }
 
-const COLORES = ['#2E3192', '#E6177D', '#2e9e5b', '#f59e0b', '#0ea5e9', '#8b5cf6', '#888888'];
+const COLORES = ['#244b78', '#d95b91', '#4e956b', '#c47a36', '#5b9bb5', '#8b83b8', '#8793a2'];
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 function colores(n) {
@@ -59,8 +59,8 @@ function dibujar(idCanvas, tipo, filas, esMes) {
       datasets: [{
         label: 'PQRS',
         data: valores,
-        backgroundColor: linea ? 'rgba(46, 49, 146, 0.15)' : colores(valores.length),
-        borderColor: linea ? '#2E3192' : undefined,
+        backgroundColor: linea ? 'rgba(36, 75, 120, 0.14)' : colores(valores.length),
+        borderColor: linea ? '#244b78' : undefined,
         fill: linea,
         tension: 0.3
       }]
