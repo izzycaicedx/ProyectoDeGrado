@@ -10,6 +10,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public')); 
 
 app.get('/', (req, res) => {
   res.json({
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 app.use('/api', testRoutes);
 app.use('/api', pqrsRoutes);
 app.use('/api', authRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 

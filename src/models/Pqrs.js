@@ -15,7 +15,7 @@ const Pqrs = sequelize.define('Pqrs', {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['Sede Principal - Cali', 'Sede Norte', 'Sede Sur']]
+      isIn: [['Principal', 'Terapias', 'Clinicas']]
     }
   },
   fecha_evento: {
@@ -26,14 +26,14 @@ const Pqrs = sequelize.define('Pqrs', {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['Formulario Web', 'Presencial', 'Correo Electrónico', 'Teléfono']]
+      isIn: [['Verbal', 'Telefonica', 'Buzon', 'Pagina web', 'Correo electronico']]
     }
   },
   tipo: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['Petición', 'Queja', 'Reclamo', 'Sugerencia']]
+      isIn: [['Peticion', 'Queja', 'Reclamo', 'Sugerencia']]
     }
   },
   tipo_documento: {
@@ -78,7 +78,7 @@ const Pqrs = sequelize.define('Pqrs', {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      isIn: [[null, 'Padre', 'Madre', 'Cónyuge', 'Hijo(a)', 'Hermano(a)', 'Otro']]
+      isIn: [['Padre', 'Madre', 'Cónyuge', 'Hijo(a)', 'Hermano(a)', 'Otro']]
     }
   },
   telefono_acompanante: {
@@ -95,6 +95,14 @@ const Pqrs = sequelize.define('Pqrs', {
   },
   usuario_id: {
     type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  asignado_a: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  fecha_limite: {
+    type: DataTypes.DATEONLY,
     allowNull: true
   }
 }, {

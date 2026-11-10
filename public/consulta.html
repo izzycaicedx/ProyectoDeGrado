@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar PQRS | AIREC Grupo Médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f7f7f9;
+      color: #222;
+    }
+    main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    h1 {
+      font-family: 'Lora', serif;
+      color: #2E3192;
+      margin: 0 0 8px;
+    }
+    p.sub { color: #555; margin: 0 0 24px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    input:focus { outline: 2px solid #E6177D; border-color: transparent; }
+    button {
+      margin-top: 16px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      letter-spacing: .03em;
+      color: #fff;
+      background: #2E3192;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .card {
+      margin-top: 28px;
+      padding: 24px;
+      background: #fff;
+      border: 1px solid #e3e3e8;
+      border-radius: 12px;
+    }
+    .card h2 {
+      font-family: 'Lora', serif;
+      color: #E6177D;
+      margin: 0 0 16px;
+      font-size: 22px;
+    }
+    .fila {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-top: 1px solid #eee;
+    }
+    .fila span:first-child { color: #666; }
+    .fila span:last-child { font-weight: 600; text-align: right; }
+    .error {
+      margin-top: 28px;
+      padding: 14px 16px;
+      background: #fdeaea;
+      border: 1px solid #f3b8b8;
+      color: #b42318;
+      border-radius: 8px;
+    }
+    .oculto { display: none; }
+    a.volver {
+      display: inline-block;
+      margin-top: 24px;
+      color: #2E3192;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Consultar estado de su PQRS</h1>
+    <p class="sub">Escriba el número de radicado que recibió al enviar su solicitud.</p>
+
+    <label for="radicado">Número de radicado</label>
+    <input type="text" id="radicado" placeholder="PQRS-2026-0001" autocomplete="off">
+    <button type="button" id="btnConsultar">CONSULTAR</button>
+
+    <div id="error" class="error oculto"></div>
+
+    <div id="resultado" class="card oculto">
+      <h2 id="rRadicado"></h2>
+      <div class="fila"><span>Estado</span><span id="rEstado"></span></div>
+      <div class="fila"><span>Tipo de solicitud</span><span id="rTipo"></span></div>
+      <div class="fila"><span>Sede</span><span id="rSede"></span></div>
+      <div class="fila"><span>Fecha del evento</span><span id="rFechaEvento"></span></div>
+      <div class="fila"><span>Fecha de radicación</span><span id="rFechaRegistro"></span></div>
+    </div>
+
+    <a class="volver" href="/">← Radicar un nuevo PQRS</a>
+  </main>
+
+  <script>
+    const input = document.getElementById('radicado');
+    const btn = document.getElementById('btnConsultar');
+    const errorBox = document.getElementById('error');
+    const resultado = document.getElementById('resultado');
+
+    function formatearFechaSolo(texto) {
+      if (!texto) return '-';
+      const [a, m, d] = texto.split('-');
+      return d + '/' + m + '/' + a;
+    }
+
+    function formatearFechaHora(iso) {
+      if (!iso) return '-';
+      return new Date(iso).toLocaleDateString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    }
+
+    async function consultar() {
+      const valor = input.value.trim();
+      errorBox.classList.add('oculto');
+      resultado.classList.add('oculto');
+
+      if (!valor) {
+        errorBox.textContent = 'Escriba el número de radicado.';
+        errorBox.classList.remove('oculto');
+        return;
+      }
+
+      btn.disabled = true;
+      try {
+        const resp = await fetch('/api/pqrs/radicado/' + encodeURIComponent(valor));
+        const json = await resp.json();
+
+        if (!resp.ok || !json.exito) {
+          errorBox.textContent = json.mensaje || 'No se pudo consultar el PQRS.';
+          errorBox.classList.remove('oculto');
+          return;
+        }
+
+        const d = json.datos;
+        document.getElementById('rRadicado').textContent = d.radicado;
+        document.getElementById('rEstado').textContent = d.estado;
+        document.getElementById('rTipo').textContent = d.tipo;
+        document.getElementById('rSede').textContent = d.sede;
+        document.getElementById('rFechaEvento').textContent = formatearFechaSolo(d.fecha_evento);
+        document.getElementById('rFechaRegistro').textContent = formatearFechaHora(d.fecha_registro);
+        resultado.classList.remove('oculto');
+      } catch (e) {
+        console.error(e);
+        errorBox.textContent = 'No hay conexión con el servidor. Intente de nuevo.';
+        errorBox.classList.remove('oculto');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener('click', consultar);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') consultar();
+    });
+  </script>
+</body>
+</html>
