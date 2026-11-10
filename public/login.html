@@ -1,84 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ingreso del personal | AIREC Grupo Médico</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;background:#f4f5f8}
-.box{background:#fff;width:100%;max-width:400px;padding:32px;border-radius:12px;border:1px solid #e3e3e8}
-h1{font-family:'Lora',serif;color:#2E3192;margin:0 0 6px}
-p{color:#555;margin:0 0 20px}
-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#666;margin:14px 0 6px}
-input{width:100%;padding:12px;font-size:16px;font-family:inherit;border:1px solid #ccc;border-radius:8px}
-input:focus{outline:2px solid #E6177D;border-color:transparent}
-button{width:100%;margin-top:20px;padding:12px;font-size:15px;font-weight:600;font-family:inherit;color:#fff;background:#2E3192;border:0;border-radius:8px;cursor:pointer}
-button:disabled{opacity:.6}
-.error{margin-top:16px;padding:10px 14px;background:#fdeaea;border:1px solid #f3b8b8;color:#b42318;border-radius:8px}
-.oculto{display:none}
-</style>
-</head>
-<body>
-<div class="box">
-  <h1>Ingreso del personal</h1>
-  <p>Gestión de PQRS · AIREC Grupo Médico</p>
-  <label for="email">Correo</label>
-  <input type="email" id="email" autocomplete="username">
-  <label for="password">Contraseña</label>
-  <input type="password" id="password" autocomplete="current-password">
-  <button type="button" id="btn">INGRESAR</button>
-  <div id="error" class="error oculto"></div>
-</div>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ingreso del personal | AIREC Grupo Médico</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/portal.css"></head>
+<body><header class="portal-header"><img src="https://airec.co/wp-content/uploads/2023/04/Logo-Airec-2023.gif" alt="AIREC Grupo Médico"></header><main class="portal-main"><p class="portal-eyebrow">Acceso institucional</p><h1>Ingreso del personal</h1><p class="portal-subtitle">Inicia sesión para acceder al panel de gestión de PQRS de AIREC Grupo Médico.</p><label class="portal-label" for="email">Correo institucional</label><input class="portal-input" type="email" id="email" autocomplete="username" placeholder="nombre@airec.co"><label class="portal-label" for="password" style="margin-top:17px">Contraseña</label><input class="portal-input" type="password" id="password" autocomplete="current-password" placeholder="Ingresa tu contraseña"><button type="button" id="btn" class="portal-button" style="width:100%">Ingresar al sistema</button><div id="error" class="portal-error oculto" role="alert"></div></main>
 <script>
-const btn = document.getElementById('btn');
-const errorBox = document.getElementById('error');
-
-function sacarToken(j) {
-  if (!j) return null;
-  if (j.token) return j.token;
-  if (j.datos && j.datos.token) return j.datos.token;
-  if (j.data && j.data.token) return j.data.token;
-  if (typeof j.datos === 'string') return j.datos;
-  return null;
-}
-
-async function ingresar() {
-  errorBox.classList.add('oculto');
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  if (!email || !password) {
-    errorBox.textContent = 'Escriba su correo y contraseña.';
-    errorBox.classList.remove('oculto');
-    return;
-  }
-  btn.disabled = true;
-  try {
-    const resp = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const json = await resp.json().catch(() => ({}));
-    const token = sacarToken(json);
-    if (!resp.ok || !token) {
-      errorBox.textContent = json.mensaje || 'Correo o contraseña incorrectos.';
-      errorBox.classList.remove('oculto');
-      return;
-    }
-    localStorage.setItem('token', token);
-    location.href = '/dashboard.html';
-  } catch (e) {
-    errorBox.textContent = 'No hay conexión con el servidor.';
-    errorBox.classList.remove('oculto');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-btn.addEventListener('click', ingresar);
-document.addEventListener('keydown', function (e) { if (e.key === 'Enter') ingresar(); });
-</script>
-</body>
-</html>
+const btn=document.getElementById('btn');const errorBox=document.getElementById('error');
+function sacarToken(j){if(!j)return null;if(j.token)return j.token;if(j.datos&&j.datos.token)return j.datos.token;if(j.data&&j.data.token)return j.data.token;if(typeof j.datos==='string')return j.datos;return null}
+async function ingresar(){errorBox.classList.add('oculto');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;if(!email||!password){errorBox.textContent='Escriba su correo y contraseña.';errorBox.classList.remove('oculto');return}btn.disabled=true;try{const resp=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});const json=await resp.json().catch(()=>({}));const token=sacarToken(json);if(!resp.ok||!token){errorBox.textContent=json.mensaje||'Correo o contraseña incorrectos.';errorBox.classList.remove('oculto');return}localStorage.setItem('token',token);location.href='/dashboard.html'}catch(e){errorBox.textContent='No hay conexión con el servidor.';errorBox.classList.remove('oculto')}finally{btn.disabled=false}}
+btn.addEventListener('click',ingresar);document.addEventListener('keydown',function(e){if(e.key==='Enter')ingresar()});
+</script></body></html>
