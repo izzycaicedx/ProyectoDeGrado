@@ -39,3 +39,30 @@ th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #
 .cerrar { margin-top: 16px; padding: 10px 20px; background: #2E3192; color: #fff; border: 0; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; }
 .venc { color: #b42318; font-weight: 600; }
 .por-venc { color: #b45309; font-weight: 600; }
+
+.encabezado-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.logo-dashboard {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+.logo-dashboard img {
+  display: block;
+  width: 54px;
+  height: 42px;
+  object-fit: contain;
+}
+.logo-dashboard:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .encabezado-dashboard { gap: 10px; }
+  .logo-dashboard img { width: 44px; height: 36px; }
+  header h1 { font-size: 17px; }
+}
