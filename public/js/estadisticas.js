@@ -188,9 +188,9 @@ function actualizarMetricasAuditoria(registros) {
     const fechaRegistro = fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0') + '-' + String(fecha.getDate()).padStart(2, '0');
     return fechaRegistro === fechaHoy;
   }).length;
-  const usuarios = new Set(registros.map(function (registro) {
-    return registro.usuario_nombre || 'Usuario no disponible';
-  }));
+  const usuarios = new Set(registros
+    .filter(function (registro) { return Boolean(registro.usuario_nombre); })
+    .map(function (registro) { return registro.usuario_nombre; }));
   const acciones = new Set(registros.map(function (registro) {
     return registro.accion || 'Actividad';
   }));
