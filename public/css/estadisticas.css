@@ -103,3 +103,28 @@
   .audit-filters .audit-search { grid-column: auto; }
   .audit-clear { width: 100%; }
 }
+
+
+/* Presentación legible del historial de auditoría */
+.audit-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.audit-table th:nth-child(1), .audit-table td:nth-child(1) { width: 18%; }
+.audit-table th:nth-child(2), .audit-table td:nth-child(2) { width: 15%; }
+.audit-table th:nth-child(3), .audit-table td:nth-child(3) { width: 16%; }
+.audit-table th:nth-child(4), .audit-table td:nth-child(4) { width: 15%; }
+.audit-table th:nth-child(5), .audit-table td:nth-child(5) { width: 36%; }
+.audit-table td {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.audit-table td:first-child { white-space: normal; }
+.audit-table td:last-child { min-width: 0; line-height: 1.6; }
+.audit-action-tag { white-space: normal; line-height: 1.35; }
+.audit-table-wrap { overflow-x: auto; }
+@media (max-width: 700px) {
+  .audit-table { min-width: 680px; table-layout: auto; }
+  .audit-table td:last-child { min-width: 220px; }
+}
