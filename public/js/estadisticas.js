@@ -296,6 +296,7 @@ function pintarAuditoria(registros) {
     const texto = [
       registro.usuario_nombre,
       registro.accion,
+      etiquetaAccion(registro.accion),
       registro.radicado,
       detalleAuditoria(registro.detalle)
     ].join(' ').toLocaleLowerCase('es');
@@ -315,8 +316,8 @@ function pintarAuditoria(registros) {
     const valores = [
       Number.isNaN(fecha.getTime()) ? 'Fecha no disponible' : fecha.toLocaleString('es-CO'),
       registro.usuario_nombre || 'Sistema / externo',
-      registro.accion || 'Actividad',
-      registro.radicado || 'PQRS no disponible',
+      etiquetaAccion(registro.accion),
+      registro.radicado || 'Sin radicado asociado',
       detalleAuditoria(registro.detalle)
     ];
 
