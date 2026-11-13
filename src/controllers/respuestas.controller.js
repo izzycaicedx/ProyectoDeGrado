@@ -3,6 +3,7 @@ const Respuesta = require('../models/Respuesta');
 const Pqrs = require('../models/Pqrs');
 const { sequelize } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
+const { enviarRespuestaPQRS } = require('../utils/correo');
 
 // Registrar una nueva respuesta
 const registrarRespuesta = async (req, res) => {
@@ -48,9 +49,42 @@ const registrarRespuesta = async (req, res) => {
       return nuevaRespuesta;
     });
 
+    let correoEnviado = false;
+    let mensajeCorreo = 'La respuesta quedó guardada, pero no se pudo enviar por correo.';
+
+    try {
+      if (!pqrs.correo_electronico) {
+        throw new Error('La PQRS no tiene un correo electrónico de destino.');
+      }
+
+      await enviarRespuestaPQRS({
+        destinatario: pqrs.correo_electronico,
+        nombre: pqrs.nombre_solicitante,
+        radicado: pqrs.radicado,
+        contenido: respuesta.contenido
+      });
+
+      correoEnviado = true;
+      mensajeCorreo = 'La respuesta se guardó y se envió al correo del ciudadano.';
+      await registrarAuditoria({
+        usuarioId,
+        pqrsId: pqrs.id,
+        accion: 'RESPUESTA_ENVIADA_CORREO',
+        detalle: {
+          radicado: pqrs.radicado,
+          respuesta_id: respuesta.id,
+          destinatario: pqrs.correo_electronico
+        }
+      });
+    } catch (errorCorreo) {
+      console.error('Respuesta guardada; fallo el envío del correo:', errorCorreo.message);
+      mensajeCorreo = 'La respuesta quedó guardada, pero el correo no se envió: ' + errorCorreo.message;
+    }
+
     return res.status(201).json({
       exito: true,
-      mensaje: 'Respuesta registrada correctamente.',
+      mensaje: mensajeCorreo,
+      correo_enviado: correoEnviado,
       datos: respuesta
     });
 
