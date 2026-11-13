@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const { QueryTypes } = require('sequelize');
 const Usuario = require('../models/Usuario');
 const { sequelize } = require('../config/database');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 const consultarAuditoria = async (req, res) => {
   try {
@@ -31,6 +32,12 @@ const consultarAuditoria = async (req, res) => {
        LIMIT 200`,
       { type: QueryTypes.SELECT }
     );
+
+    await registrarAuditoria({
+      usuarioId: req.usuario.id,
+      accion: 'CONSULTA_AUDITORIA',
+      detalle: { cantidad_resultados: registros.length }
+    });
 
     return res.status(200).json({
       exito: true,
