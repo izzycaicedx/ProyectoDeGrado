@@ -244,7 +244,7 @@ function generarPlantillaRespuesta(p) {
     'AIREC GRUPO MÉDICO',
     '',
     'Este documento corresponde a la respuesta institucional asociada al radicado ' + (p.radicado || '') + '.'
-  ].join('\\n');
+  ].join('\n');
 }
 
 async function cargarHistorialRespuestas(id) {
@@ -358,7 +358,7 @@ document.getElementById('detalle').addEventListener('submit', async function (e)
     mensaje.textContent = 'Escribe el contenido de la respuesta antes de guardarla.';
     return;
   }
-  if (/\\[[^\\]]+\\]/.test(contenido)) {
+  if (/\[[^\]]+\]/.test(contenido)) {
     mensaje.textContent = 'Completa o elimina todos los campos indicados entre corchetes antes de guardar.';
     return;
   }
