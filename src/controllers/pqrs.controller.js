@@ -186,8 +186,34 @@ const actualizarEstado = async (req, res) => {
       });
     }
 
-    pqrs.estado = estado;
-    await pqrs.save();
+    const estadoAnterior = pqrs.estado;
+    const usuarioId = req.usuario?.id || null;
+
+    // El cambio y su registro de auditoría se guardan juntos.
+    // Si falla el registro, también se revierte la actualización del estado.
+    const { sequelize } = require('../config/database');
+
+    await sequelize.transaction(async (transaction) => {
+      pqrs.estado = estado;
+      await pqrs.save({ transaction });
+
+      await sequelize.query(
+        `INSERT INTO auditoria (usuario_id, pqrs_id, accion, detalle)
+         VALUES (:usuario_id, :pqrs_id, :accion, :detalle)`,
+        {
+          replacements: {
+            usuario_id: usuarioId,
+            pqrs_id: pqrs.id,
+            accion: 'CAMBIO_ESTADO',
+            detalle: JSON.stringify({
+              estado_anterior: estadoAnterior,
+              estado_nuevo: estado
+            })
+          },
+          transaction
+        }
+      );
+    });
 
     return res.status(200).json({
       exito: true,
