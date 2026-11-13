@@ -1,5 +1,6 @@
 const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 const listarCategorias = async (req, res) => {
   try {
@@ -84,6 +85,11 @@ const asignarCategoria = async (req, res) => {
 
     // Una categoría por PQRS: se reemplaza la anterior
     await sequelize.transaction(async function (t) {
+      const anterior = await sequelize.query(
+        'SELECT categoria_id FROM pqrs_categoria WHERE pqrs_id = :p',
+        { replacements: { p: pqrsId }, type: QueryTypes.SELECT, transaction: t }
+      );
+
       await sequelize.query(
         'DELETE FROM pqrs_categoria WHERE pqrs_id = :p',
         { replacements: { p: pqrsId }, transaction: t }
@@ -94,6 +100,17 @@ const asignarCategoria = async (req, res) => {
           { replacements: { p: pqrsId, c: categoriaId }, transaction: t }
         );
       }
+
+      await registrarAuditoria({
+        usuarioId: req.usuario?.id || null,
+        pqrsId,
+        accion: 'CLASIFICACION',
+        detalle: {
+          categoria_anterior: anterior[0]?.categoria_id || null,
+          categoria_nueva: categoriaId
+        },
+        transaction: t
+      });
     });
 
     return res.status(200).json({

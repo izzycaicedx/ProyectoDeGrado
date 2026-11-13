@@ -1,8 +1,24 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ingreso del personal | AIREC Grupo Médico</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/portal.css"></head>
-<body><header class="portal-header"><img src="https://airec.co/wp-content/uploads/2023/04/Logo-Airec-2023.gif" alt="AIREC Grupo Médico"></header><main class="portal-main"><p class="portal-eyebrow">Acceso institucional</p><h1>Ingreso del personal</h1><p class="portal-subtitle">Inicia sesión para acceder al panel de gestión de PQRS de AIREC Grupo Médico.</p><label class="portal-label" for="email">Correo institucional</label><input class="portal-input" type="email" id="email" autocomplete="username" placeholder="nombre@airec.co"><label class="portal-label" for="password" style="margin-top:17px">Contraseña</label><input class="portal-input" type="password" id="password" autocomplete="current-password" placeholder="Ingresa tu contraseña"><button type="button" id="btn" class="portal-button" style="width:100%">Ingresar al sistema</button><div id="error" class="portal-error oculto" role="alert"></div></main>
+<body><header class="portal-header"><img src="https://airec.co/wp-content/uploads/2023/04/Logo-Airec-2023.gif" alt="AIREC Grupo Médico"></header><main class="portal-main"><p class="portal-eyebrow">Acceso institucional</p><h1>Ingreso del personal</h1><p class="portal-subtitle">Inicia sesión para acceder al panel de gestión de PQRS de AIREC Grupo Médico.</p><label class="portal-label" for="email">Correo institucional</label><input class="portal-input" type="email" id="email" autocomplete="username" placeholder="nombre@airec.co"><label class="portal-label" for="password" style="margin-top:17px">Contraseña</label><div class="portal-password-wrap">
+<input class="portal-input" type="password" id="password" autocomplete="current-password" placeholder="Ingresa tu contraseña">
+<button type="button" class="portal-password-toggle" id="togglePassword" aria-label="Mostrar contraseña" aria-pressed="false">
+<svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+</button>
+</div><button type="button" id="btn" class="portal-button" style="width:100%">Ingresar al sistema</button><div id="error" class="portal-error oculto" role="alert"></div></main>
 <script>
 const btn=document.getElementById('btn');const errorBox=document.getElementById('error');
+const passwordInput=document.getElementById('password');
+const togglePassword=document.getElementById('togglePassword');
+togglePassword.addEventListener('click',function(){
+ const visible=passwordInput.type==='password';
+ passwordInput.type=visible?'text':'password';
+ this.setAttribute('aria-label',visible?'Ocultar contraseña':'Mostrar contraseña');
+ this.setAttribute('aria-pressed',String(visible));
+ this.innerHTML=visible
+  ? '<svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7c1.3 0 2.5-.3 3.6-.8"/></svg>'
+  : '<svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+});
 function sacarToken(j){if(!j)return null;if(j.token)return j.token;if(j.datos&&j.datos.token)return j.datos.token;if(j.data&&j.data.token)return j.data.token;if(typeof j.datos==='string')return j.datos;return null}
 async function ingresar(){errorBox.classList.add('oculto');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;if(!email||!password){errorBox.textContent='Escriba su correo y contraseña.';errorBox.classList.remove('oculto');return}btn.disabled=true;try{const resp=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});const json=await resp.json().catch(()=>({}));const token=sacarToken(json);if(!resp.ok||!token){errorBox.textContent=json.mensaje||'Correo o contraseña incorrectos.';errorBox.classList.remove('oculto');return}localStorage.setItem('token',token);location.href='/dashboard.html'}catch(e){errorBox.textContent='No hay conexión con el servidor.';errorBox.classList.remove('oculto')}finally{btn.disabled=false}}
 btn.addEventListener('click',ingresar);document.addEventListener('keydown',function(e){if(e.key==='Enter')ingresar()});

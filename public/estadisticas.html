@@ -98,8 +98,62 @@
           </article>
         </div>
       </section>
+      <section class="audit-access" aria-labelledby="auditTitle">
+        <div class="audit-access-copy">
+          <span class="audit-icon" aria-hidden="true">▤</span>
+          <div>
+            <h2 id="auditTitle">Historial de auditoría</h2>
+            <p>Consulta quién realizó cambios en las PQRS y cuándo se hicieron.</p>
+          </div>
+        </div>
+        <button type="button" id="abrirAuditoria" class="audit-button"> <span aria-hidden="true">⌕</span> Ver historial de auditoría</button>
+      </section>
+
       <footer class="page-footer">AIREC Grupo Médico <span>·</span> Gestión de PQRS</footer>
     </main>
+  </div>
+</div>
+<div id="modalAuditoria" class="audit-modal oculto" role="dialog" aria-modal="true" aria-labelledby="auditModalTitle">
+  <div class="audit-modal-panel">
+    <button type="button" id="cerrarAuditoria" class="audit-close" aria-label="Cerrar">×</button>
+    <div id="auditPasswordView">
+      <span class="audit-modal-icon" aria-hidden="true">⌑</span>
+      <p class="eyebrow">ACCESO PROTEGIDO</p>
+      <h2 id="auditModalTitle">Confirmar identidad</h2>
+      <p class="audit-modal-description">Por seguridad, vuelve a ingresar tu contraseña para consultar el historial.</p>
+      <form id="formAuditoria">
+        <label for="passwordAuditoria">Contraseña</label>
+        <input type="password" id="passwordAuditoria" name="password" autocomplete="current-password" required>
+        <p id="auditError" class="audit-error" role="alert"></p>
+        <button type="submit" id="consultarAuditoria" class="audit-button audit-submit">Continuar</button>
+      </form>
+    </div>
+    <div id="auditResultsView" class="oculto">
+      <p class="eyebrow">REGISTRO DE ACTIVIDAD</p>
+      <h2>Historial de auditoría</h2>
+      <p class="audit-modal-description">Consulta y filtra los 200 movimientos más recientes registrados en el sistema. Los indicadores corresponden a ese mismo periodo de consulta.</p>
+      <section class="audit-metrics" aria-label="Indicadores del historial">
+        <article class="audit-metric"><span>Movimientos registrados</span><strong id="auditTotal">0</strong></article>
+        <article class="audit-metric"><span>Movimientos de hoy</span><strong id="auditHoy">0</strong></article>
+        <article class="audit-metric"><span>Usuarios con actividad</span><strong id="auditUsuarios">0</strong></article>
+        <article class="audit-metric"><span>Tipos de acción</span><strong id="auditTipos">0</strong></article>
+      </section>
+      <div class="audit-filters">
+        <label class="audit-search"><span>Buscar en el historial</span><input type="search" id="buscarAuditoria" placeholder="Usuario, acción, radicado o detalle"></label>
+        <label><span>Tipo de acción</span><select id="filtroAccionAuditoria"><option value="">Todas las acciones</option></select></label>
+        <label><span>Fecha</span><input type="date" id="filtroFechaAuditoria"></label>
+        <button type="button" id="limpiarFiltrosAuditoria" class="audit-clear">Limpiar filtros</button>
+      </div>
+      <p id="auditResultCount" class="audit-result-count" aria-live="polite">Mostrando 0 movimientos</p>
+      <div class="audit-table-wrap">
+        <table class="audit-table">
+          <thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Radicado</th><th>Detalle</th></tr></thead>
+          <tbody id="filasAuditoria"></tbody>
+        </table>
+        <p id="auditoriaVacia" class="audit-empty oculto">Todavía no hay movimientos registrados.</p>
+      </div>
+      <button type="button" id="volverAuditoria" class="audit-secondary">Volver a contraseña</button>
+    </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

@@ -1,5 +1,6 @@
 const Pqrs = require('../models/Pqrs');
 const { calcularFechaLimite, marcarVencidos } = require('../utils/plazos');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 const crearPqrs = async (req, res) => {
   try {
@@ -66,6 +67,13 @@ const crearPqrs = async (req, res) => {
     nuevoPqrs.radicado = radicado;
     await nuevoPqrs.save();
 
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: nuevoPqrs.id,
+      accion: 'RADICACION',
+      detalle: { radicado, tipo, sede, origen: 'Formulario público' }
+    });
+
     return res.status(201).json({
       exito: true,
       mensaje: 'PQRS radicado exitosamente.',
@@ -95,6 +103,11 @@ const listarPqrs = async (req, res) => {
   try {
     await marcarVencidos();
     const pqrsList = await Pqrs.findAll({ order: [['fecha_registro', 'DESC']] });
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      accion: 'CONSULTA_LISTADO_PQRS',
+      detalle: { cantidad_resultados: pqrsList.length }
+    });
     return res.status(200).json({
       exito: true,
       mensaje: 'Listado de PQRS obtenido correctamente.',
@@ -122,6 +135,13 @@ const obtenerPqrsPorId = async (req, res) => {
         datos: null
       });
     }
+
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: pqrs.id,
+      accion: 'CONSULTA_PQRS',
+      detalle: { radicado: pqrs.radicado }
+    });
 
     return res.status(200).json({
       exito: true,
@@ -156,6 +176,12 @@ const consultarPorRadicado = async (req, res) => {
       });
     }
 
+    await registrarAuditoria({
+      pqrsId: pqrs.id,
+      accion: 'CONSULTA_RADICADO',
+      detalle: { canal: 'Consulta pública' }
+    });
+
     return res.status(200).json({
       exito: true,
       mensaje: 'PQRS encontrado.',
@@ -186,8 +212,34 @@ const actualizarEstado = async (req, res) => {
       });
     }
 
-    pqrs.estado = estado;
-    await pqrs.save();
+    const estadoAnterior = pqrs.estado;
+    const usuarioId = req.usuario?.id || null;
+
+    // El cambio y su registro de auditoría se guardan juntos.
+    // Si falla el registro, también se revierte la actualización del estado.
+    const { sequelize } = require('../config/database');
+
+    await sequelize.transaction(async (transaction) => {
+      pqrs.estado = estado;
+      await pqrs.save({ transaction });
+
+      await sequelize.query(
+        `INSERT INTO auditoria (usuario_id, pqrs_id, accion, detalle)
+         VALUES (:usuario_id, :pqrs_id, :accion, :detalle)`,
+        {
+          replacements: {
+            usuario_id: usuarioId,
+            pqrs_id: pqrs.id,
+            accion: 'CAMBIO_ESTADO',
+            detalle: JSON.stringify({
+              estado_anterior: estadoAnterior,
+              estado_nuevo: estado
+            })
+          },
+          transaction
+        }
+      );
+    });
 
     return res.status(200).json({
       exito: true,
@@ -219,6 +271,8 @@ const asignarPqrs = async (req, res) => {
       });
     }
 
+    const responsableAnterior = pqrs.asignado_a;
+    const estadoAnterior = pqrs.estado;
     pqrs.asignado_a = asignado_a || null;
 
     // Al asignarlo por primera vez, pasa de "Recibido" a "En clasificacion"
@@ -227,6 +281,18 @@ const asignarPqrs = async (req, res) => {
     }
 
     await pqrs.save();
+
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: pqrs.id,
+      accion: 'ASIGNACION',
+      detalle: {
+        responsable_anterior: responsableAnterior,
+        responsable_nuevo: pqrs.asignado_a,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: pqrs.estado
+      }
+    });
 
     return res.status(200).json({
       exito: true,
