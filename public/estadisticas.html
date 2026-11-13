@@ -131,7 +131,20 @@
     <div id="auditResultsView" class="oculto">
       <p class="eyebrow">REGISTRO DE ACTIVIDAD</p>
       <h2>Historial de auditoría</h2>
-      <p class="audit-modal-description">Se muestran los 200 movimientos más recientes.</p>
+      <p class="audit-modal-description">Consulta y filtra los 200 movimientos más recientes registrados en el sistema.</p>
+      <section class="audit-metrics" aria-label="Indicadores del historial">
+        <article class="audit-metric"><span>Movimientos consultados</span><strong id="auditTotal">0</strong></article>
+        <article class="audit-metric"><span>Movimientos de hoy</span><strong id="auditHoy">0</strong></article>
+        <article class="audit-metric"><span>Usuarios con actividad</span><strong id="auditUsuarios">0</strong></article>
+        <article class="audit-metric"><span>Tipos de acción</span><strong id="auditTipos">0</strong></article>
+      </section>
+      <div class="audit-filters">
+        <label class="audit-search"><span>Buscar en el historial</span><input type="search" id="buscarAuditoria" placeholder="Usuario, acción, radicado o detalle"></label>
+        <label><span>Tipo de acción</span><select id="filtroAccionAuditoria"><option value="">Todas las acciones</option></select></label>
+        <label><span>Fecha</span><input type="date" id="filtroFechaAuditoria"></label>
+        <button type="button" id="limpiarFiltrosAuditoria" class="audit-clear">Limpiar filtros</button>
+      </div>
+      <p id="auditResultCount" class="audit-result-count" aria-live="polite">Mostrando 0 movimientos</p>
       <div class="audit-table-wrap">
         <table class="audit-table">
           <thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Radicado</th><th>Detalle</th></tr></thead>
