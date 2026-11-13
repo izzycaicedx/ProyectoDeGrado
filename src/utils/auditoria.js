@@ -18,6 +18,7 @@ async function registrarAuditoria({ usuarioId = null, pqrsId = null, accion, det
     return true;
   } catch (error) {
     console.error('No fue posible registrar la actividad de auditoría:', error);
+    if (transaction) throw error;
     return false;
   }
 }
