@@ -8,6 +8,7 @@ let pqrs = [];
 let responsables = [];
 let categorias = [];
 let asignadas = {};
+let pqrsActiva = null;
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -210,6 +211,42 @@ async function cambiar(id, campo, valor) {
   pintarTodo();
 }
 
+function generarPlantillaRespuesta(p) {
+  const hoy = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+  return [
+    'AIREC GRUPO MÉDICO',
+    'RESPUESTA A PETICIÓN, QUEJA, RECLAMO O SUGERENCIA',
+    '',
+    'Fecha de respuesta: ' + hoy,
+    'Radicado: ' + (p.radicado || ''),
+    'Señor(a): ' + (p.nombre_solicitante || ''),
+    'Correo de contacto: ' + (p.correo_electronico || ''),
+    'Asunto: Respuesta a su ' + (p.tipo || 'solicitud') + ' - ' + (p.radicado || ''),
+    '',
+    'Cordial saludo,',
+    '',
+    'En atención a la solicitud registrada ante AIREC Grupo Médico con el número de radicado ' + (p.radicado || '') + ', relacionada con el siguiente asunto:',
+    '',
+    '“' + (p.descripcion || '').trim() + '”',
+    '',
+    'Una vez revisada la información y realizadas las validaciones correspondientes, nos permitimos informarle lo siguiente:',
+    '',
+    '[Describa aquí el análisis realizado y la respuesta concreta a cada uno de los puntos planteados.]',
+    '',
+    '[Indique las acciones adelantadas, las medidas adoptadas o las razones que sustentan la decisión.]',
+    '',
+    'Agradecemos que se haya comunicado con nosotros. Sus observaciones contribuyen al mejoramiento continuo de nuestros servicios y a la calidad de la atención.',
+    '',
+    'Atentamente,',
+    '',
+    '[Nombre de quien responde]',
+    '[Cargo / Área responsable]',
+    'AIREC GRUPO MÉDICO',
+    '',
+    'Este documento corresponde a la respuesta institucional asociada al radicado ' + (p.radicado || '') + '.'
+  ].join('\\n');
+}
+
 async function cargarHistorialRespuestas(id) {
   const contenedor = document.getElementById('historialRespuestas');
   if (!contenedor) return;
@@ -234,6 +271,7 @@ async function cargarHistorialRespuestas(id) {
 function verDetalle(id) {
   const p = pqrs.find(function (x) { return x.id === id; });
   if (!p) return;
+  pqrsActiva = p;
   function fila(a, b) { return '<div class="fila"><span>' + a + '</span><span>' + esc(b || '-') + '</span></div>'; }
   let html = '<h2>' + esc(p.radicado) + '</h2>' +
     fila('Tipo', p.tipo) + fila('Estado', p.estado) + fila('Sede', p.sede) +
@@ -254,10 +292,13 @@ function verDetalle(id) {
   html += '<div class="desc">' + esc(p.descripcion) + '</div>' +
     '<section class="respuesta-panel">' +
       '<div class="respuesta-titulo"><h3>Respuesta de la PQRS</h3><p>Registra la contestación y conserva su historial.</p></div>' +
-      '<button class="accion-respuesta" id="mostrarFormularioRespuesta" type="button">Responder PQRS</button>' +
+      '<div class="respuesta-destino"><span>Destinatario</span><strong>' + esc(p.nombre_solicitante) + '</strong><small>' + esc(p.correo_electronico) + '</small><em>La respuesta se guarda en el expediente. El envío por correo aún no está habilitado.</em></div>' +
+      '<button class="accion-respuesta" id="mostrarFormularioRespuesta" type="button">Preparar respuesta institucional</button>' +
       '<form id="formRespuesta" class="form-respuesta oculto">' +
-        '<label for="contenidoRespuesta">Contenido de la respuesta</label>' +
-        '<textarea id="contenidoRespuesta" rows="5" maxlength="10000" required placeholder="Escribe aquí la respuesta para el usuario..."></textarea>' +
+        '<div class="plantilla-cabecera"><div><strong>Formato institucional AIREC</strong><small>Plantilla editable con datos de la PQRS</small></div><button class="usar-plantilla" id="usarPlantilla" type="button">Cargar plantilla</button></div>' +
+        '<label for="contenidoRespuesta">Respuesta formal</label>' +
+        '<textarea id="contenidoRespuesta" rows="16" maxlength="10000" required placeholder="Carga la plantilla institucional o redacta la respuesta..."></textarea>' +
+        '<small class="ayuda-respuesta">Revisa el texto, completa los campos entre corchetes y verifica que la respuesta atienda todos los puntos de la solicitud antes de guardarla.</small>' +
         '<div class="acciones-formulario"><button class="guardar-respuesta" type="submit">Guardar respuesta</button><button class="cancelar-respuesta" id="cancelarRespuesta" type="button">Cancelar</button></div>' +
         '<p id="mensajeRespuesta" class="mensaje-respuesta" role="status"></p>' +
       '</form>' +
@@ -292,6 +333,13 @@ document.getElementById('modal').addEventListener('click', function (e) {
     document.getElementById('formRespuesta').classList.remove('oculto');
     document.getElementById('contenidoRespuesta').focus();
   }
+  if (e.target.id === 'usarPlantilla') {
+    e.preventDefault();
+    if (pqrsActiva) {
+      document.getElementById('contenidoRespuesta').value = generarPlantillaRespuesta(pqrsActiva);
+      document.getElementById('mensajeRespuesta').textContent = 'Plantilla cargada. Completa los campos entre corchetes antes de guardar.';
+    }
+  }
   if (e.target.id === 'cancelarRespuesta') {
     document.getElementById('formRespuesta').classList.add('oculto');
     document.getElementById('contenidoRespuesta').value = '';
@@ -308,6 +356,10 @@ document.getElementById('detalle').addEventListener('submit', async function (e)
   const contenido = campo.value.trim();
   if (!contenido) {
     mensaje.textContent = 'Escribe el contenido de la respuesta antes de guardarla.';
+    return;
+  }
+  if (/\\[[^\\]]+\\]/.test(contenido)) {
+    mensaje.textContent = 'Completa o elimina todos los campos indicados entre corchetes antes de guardar.';
     return;
   }
   boton.disabled = true;
