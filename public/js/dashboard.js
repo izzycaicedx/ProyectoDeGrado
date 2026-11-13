@@ -292,7 +292,7 @@ function verDetalle(id) {
   html += '<div class="desc">' + esc(p.descripcion) + '</div>' +
     '<section class="respuesta-panel">' +
       '<div class="respuesta-titulo"><h3>Respuesta de la PQRS</h3><p>Registra la contestación y conserva su historial.</p></div>' +
-      '<div class="respuesta-destino"><span>Destinatario</span><strong>' + esc(p.nombre_solicitante) + '</strong><small>' + esc(p.correo_electronico) + '</small><em>La respuesta se guarda en el expediente. El envío por correo aún no está habilitado.</em></div>' +
+      '<div class="respuesta-destino"><span>Destinatario</span><strong>' + esc(p.nombre_solicitante) + '</strong><small>' + esc(p.correo_electronico) + '</small><em>La respuesta se guarda en el expediente y se envía al correo registrado cuando SMTP está configurado.</em></div>' +
       '<button class="accion-respuesta" id="mostrarFormularioRespuesta" type="button">Preparar respuesta institucional</button>' +
       '<form id="formRespuesta" class="form-respuesta oculto">' +
         '<div class="plantilla-cabecera"><div><strong>Formato institucional AIREC</strong><small>Plantilla editable con datos de la PQRS</small></div><button class="usar-plantilla" id="usarPlantilla" type="button">Cargar plantilla</button></div>' +
