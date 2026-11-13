@@ -40,7 +40,7 @@ async function api(ruta, opciones) {
     const detalle = typeof json.datos === 'string' ? ' → ' + json.datos : '';
     throw new Error((json.mensaje || 'Error en el servidor') + detalle);
   }
-  return json.datos;
+  return opciones.respuestaCompleta ? json : json.datos;
 }
 
 function fechaCorta(iso) {
@@ -366,13 +366,15 @@ document.getElementById('detalle').addEventListener('submit', async function (e)
   boton.textContent = 'Guardando...';
   mensaje.textContent = '';
   try {
-    await api('/pqrs/' + id + '/respuestas', {
+    const resultado = await api('/pqrs/' + id + '/respuestas', {
       method: 'POST',
-      body: JSON.stringify({ contenido: contenido })
+      body: JSON.stringify({ contenido: contenido }),
+      respuestaCompleta: true
     });
     campo.value = '';
     e.target.classList.add('oculto');
-    mensaje.textContent = 'La respuesta se guardó correctamente.';
+    mensaje.textContent = resultado.mensaje || 'Respuesta procesada.';
+    mensaje.style.color = resultado.correo_enviado ? '#438b68' : '#9a6c36';
     await cargarHistorialRespuestas(id);
   } catch (error) {
     if (error.message !== 'sesion') mensaje.textContent = error.message;
