@@ -177,13 +177,80 @@ function detalleAuditoria(valor) {
   }
 }
 
+let registrosAuditoria = [];
+
+function actualizarMetricasAuditoria(registros) {
+  const hoy = new Date();
+  const fechaHoy = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+  const movimientosHoy = registros.filter(function (registro) {
+    const fecha = new Date(registro.fecha_registro);
+    if (Number.isNaN(fecha.getTime())) return false;
+    const fechaRegistro = fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0') + '-' + String(fecha.getDate()).padStart(2, '0');
+    return fechaRegistro === fechaHoy;
+  }).length;
+  const usuarios = new Set(registros.map(function (registro) {
+    return registro.usuario_nombre || 'Usuario no disponible';
+  }));
+  const acciones = new Set(registros.map(function (registro) {
+    return registro.accion || 'Actividad';
+  }));
+
+  document.getElementById('auditTotal').textContent = registros.length;
+  document.getElementById('auditHoy').textContent = movimientosHoy;
+  document.getElementById('auditUsuarios').textContent = usuarios.size;
+  document.getElementById('auditTipos').textContent = acciones.size;
+}
+
+function cargarOpcionesAccion(registros) {
+  const selector = document.getElementById('filtroAccionAuditoria');
+  const seleccionActual = selector.value;
+  const acciones = Array.from(new Set(registros.map(function (registro) {
+    return registro.accion || 'Actividad';
+  }))).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+
+  selector.replaceChildren();
+  const todas = document.createElement('option');
+  todas.value = '';
+  todas.textContent = 'Todas las acciones';
+  selector.appendChild(todas);
+
+  acciones.forEach(function (accion) {
+    const opcion = document.createElement('option');
+    opcion.value = accion;
+    opcion.textContent = accion;
+    selector.appendChild(opcion);
+  });
+  selector.value = acciones.includes(seleccionActual) ? seleccionActual : '';
+}
+
 function pintarAuditoria(registros) {
   const cuerpo = document.getElementById('filasAuditoria');
   const vacio = document.getElementById('auditoriaVacia');
-  cuerpo.replaceChildren();
-  vacio.classList.toggle('oculto', registros.length > 0);
+  const busqueda = document.getElementById('buscarAuditoria').value.trim().toLocaleLowerCase('es');
+  const accion = document.getElementById('filtroAccionAuditoria').value;
+  const fechaFiltro = document.getElementById('filtroFechaAuditoria').value;
 
-  registros.forEach(function (registro) {
+  const filtrados = registros.filter(function (registro) {
+    const fecha = new Date(registro.fecha_registro);
+    const fechaLocal = Number.isNaN(fecha.getTime()) ? '' :
+      fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0') + '-' + String(fecha.getDate()).padStart(2, '0');
+    const texto = [
+      registro.usuario_nombre,
+      registro.accion,
+      registro.radicado,
+      detalleAuditoria(registro.detalle)
+    ].join(' ').toLocaleLowerCase('es');
+
+    return (!busqueda || texto.includes(busqueda)) &&
+      (!accion || (registro.accion || 'Actividad') === accion) &&
+      (!fechaFiltro || fechaLocal === fechaFiltro);
+  });
+
+  cuerpo.replaceChildren();
+  vacio.textContent = filtrados.length ? 'No hay movimientos que coincidan con los filtros.' : 'No hay movimientos que coincidan con los filtros.';
+  vacio.classList.toggle('oculto', filtrados.length > 0);
+
+  filtrados.forEach(function (registro) {
     const fila = document.createElement('tr');
     const fecha = new Date(registro.fecha_registro);
     const valores = [
@@ -194,14 +261,41 @@ function pintarAuditoria(registros) {
       detalleAuditoria(registro.detalle)
     ];
 
-    valores.forEach(function (valor) {
+    valores.forEach(function (valor, indice) {
       const celda = document.createElement('td');
-      celda.textContent = valor;
+      if (indice === 2) {
+        const etiqueta = document.createElement('span');
+        etiqueta.className = 'audit-action-tag';
+        etiqueta.textContent = valor;
+        celda.appendChild(etiqueta);
+      } else {
+        celda.textContent = valor;
+      }
       fila.appendChild(celda);
     });
     cuerpo.appendChild(fila);
   });
+
+  document.getElementById('auditResultCount').textContent =
+    'Mostrando ' + filtrados.length + ' de ' + registros.length + ' movimientos';
 }
+
+function aplicarFiltrosAuditoria() {
+  pintarAuditoria(registrosAuditoria);
+}
+
+function limpiarFiltrosAuditoria() {
+  document.getElementById('buscarAuditoria').value = '';
+  document.getElementById('filtroAccionAuditoria').value = '';
+  document.getElementById('filtroFechaAuditoria').value = '';
+  aplicarFiltrosAuditoria();
+}
+
+['buscarAuditoria', 'filtroAccionAuditoria', 'filtroFechaAuditoria'].forEach(function (id) {
+  document.getElementById(id).addEventListener('input', aplicarFiltrosAuditoria);
+  document.getElementById(id).addEventListener('change', aplicarFiltrosAuditoria);
+});
+document.getElementById('limpiarFiltrosAuditoria').addEventListener('click', limpiarFiltrosAuditoria);
 
 document.getElementById('abrirAuditoria').addEventListener('click', function () {
   document.getElementById('auditPasswordView').classList.remove('oculto');
