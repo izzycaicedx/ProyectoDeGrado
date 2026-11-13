@@ -1,5 +1,6 @@
 const Pqrs = require('../models/Pqrs');
 const { calcularFechaLimite, marcarVencidos } = require('../utils/plazos');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 const crearPqrs = async (req, res) => {
   try {
@@ -65,6 +66,13 @@ const crearPqrs = async (req, res) => {
 
     nuevoPqrs.radicado = radicado;
     await nuevoPqrs.save();
+
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: nuevoPqrs.id,
+      accion: 'RADICACION',
+      detalle: { radicado, tipo, sede, origen: 'Formulario público' }
+    });
 
     return res.status(201).json({
       exito: true,
@@ -245,6 +253,8 @@ const asignarPqrs = async (req, res) => {
       });
     }
 
+    const responsableAnterior = pqrs.asignado_a;
+    const estadoAnterior = pqrs.estado;
     pqrs.asignado_a = asignado_a || null;
 
     // Al asignarlo por primera vez, pasa de "Recibido" a "En clasificacion"
@@ -253,6 +263,18 @@ const asignarPqrs = async (req, res) => {
     }
 
     await pqrs.save();
+
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: pqrs.id,
+      accion: 'ASIGNACION',
+      detalle: {
+        responsable_anterior: responsableAnterior,
+        responsable_nuevo: pqrs.asignado_a,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: pqrs.estado
+      }
+    });
 
     return res.status(200).json({
       exito: true,
