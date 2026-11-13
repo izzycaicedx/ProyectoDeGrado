@@ -189,7 +189,7 @@ function actualizarMetricasAuditoria(registros) {
     return fechaRegistro === fechaHoy;
   }).length;
   const usuarios = new Set(registros
-    .filter(function (registro) { return Boolean(registro.usuario_nombre); })
+    .filter(function (registro) { return registro.usuario_id !== null && registro.usuario_id !== undefined; })
     .map(function (registro) { return registro.usuario_nombre; }));
   const acciones = new Set(registros.map(function (registro) {
     return registro.accion || 'Actividad';
