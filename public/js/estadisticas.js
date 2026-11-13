@@ -180,7 +180,7 @@ const ACCIONES_AUDITORIA = {
 
 function etiquetaAccion(accion) {
   return ACCIONES_AUDITORIA[accion] || String(accion || 'Actividad').replace(/_/g, ' ').toLocaleLowerCase('es')
-    .replace(/(^|\s)\\S/g, function (letra) { return letra.toLocaleUpperCase('es'); });
+    .replace(/(^|\s)\S/g, function (letra) { return letra.toLocaleUpperCase('es'); });
 }
 
 function detalleAuditoria(valor) {
@@ -226,7 +226,7 @@ function detalleAuditoria(valor) {
   ]);
   Object.keys(datos).forEach(function (clave) {
     if (!conocidas.has(clave)) {
-      const nombre = clave.replace(/_/g, ' ').replace(/(^|\s)\\S/g, function (letra) {
+      const nombre = clave.replace(/_/g, ' ').replace(/(^|\s)\S/g, function (letra) {
         return letra.toLocaleUpperCase('es');
       });
       const contenido = datos[clave];
