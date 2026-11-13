@@ -160,7 +160,7 @@ function pintarTabla() {
       return '<option value="' + e + '"' + (e === p.estado ? ' selected' : '') + '>' + e + '</option>';
     }).join('');
     return '<tr>' +
-      '<td><b>' + esc(p.radicado) + '</b></td>' +
+      '<td><button class="radicado-link" data-id="' + p.id + '" data-campo="ver" type="button">' + esc(p.radicado) + '</button></td>' +
       '<td>' + esc(p.tipo) + '</td>' +
       '<td>' + esc(p.nombre_solicitante) + '</td>' +
       '<td>' + esc(p.sede) + '</td>' +
@@ -210,6 +210,27 @@ async function cambiar(id, campo, valor) {
   pintarTodo();
 }
 
+async function cargarHistorialRespuestas(id) {
+  const contenedor = document.getElementById('historialRespuestas');
+  if (!contenedor) return;
+  contenedor.innerHTML = '<p class="historial-cargando">Consultando respuestas...</p>';
+  try {
+    const respuestas = await api('/pqrs/' + id + '/respuestas');
+    if (!respuestas || respuestas.length === 0) {
+      contenedor.innerHTML = '<div class="historial-vacio">Todavía no hay respuestas registradas para esta PQRS.</div>';
+      return;
+    }
+    contenedor.innerHTML = '<h4>Historial de respuestas</h4>' + respuestas.map(function (r) {
+      return '<article class="respuesta-item">' +
+        '<div class="respuesta-meta"><strong>Usuario #' + esc(r.usuario_id) + '</strong><time>' + esc(new Date(r.fecha_respuesta).toLocaleString('es-CO')) + '</time></div>' +
+        '<p>' + esc(r.contenido) + '</p>' +
+      '</article>';
+    }).join('');
+  } catch (error) {
+    contenedor.innerHTML = '<p class="historial-error">' + esc(error.message === 'sesion' ? 'La sesión terminó. Inicia sesión nuevamente.' : error.message) + '</p>';
+  }
+}
+
 function verDetalle(id) {
   const p = pqrs.find(function (x) { return x.id === id; });
   if (!p) return;
@@ -231,9 +252,22 @@ function verDetalle(id) {
       fila('Teléfono acompañante', p.telefono_acompanante);
   }
   html += '<div class="desc">' + esc(p.descripcion) + '</div>' +
-    '<button class="cerrar" id="cerrarModal">Cerrar</button>';
+    '<section class="respuesta-panel">' +
+      '<div class="respuesta-titulo"><h3>Respuesta de la PQRS</h3><p>Registra la contestación y conserva su historial.</p></div>' +
+      '<button class="accion-respuesta" id="mostrarFormularioRespuesta" type="button">Responder PQRS</button>' +
+      '<form id="formRespuesta" class="form-respuesta oculto">' +
+        '<label for="contenidoRespuesta">Contenido de la respuesta</label>' +
+        '<textarea id="contenidoRespuesta" rows="5" maxlength="10000" required placeholder="Escribe aquí la respuesta para el usuario..."></textarea>' +
+        '<div class="acciones-formulario"><button class="guardar-respuesta" type="submit">Guardar respuesta</button><button class="cancelar-respuesta" id="cancelarRespuesta" type="button">Cancelar</button></div>' +
+        '<p id="mensajeRespuesta" class="mensaje-respuesta" role="status"></p>' +
+      '</form>' +
+      '<div id="historialRespuestas" class="historial-respuestas"><p class="historial-cargando">Cargando historial...</p></div>' +
+    '</section>' +
+    '<button class="cerrar" id="cerrarModal" type="button">Cerrar</button>';
   document.getElementById('detalle').innerHTML = html;
+  document.getElementById('detalle').setAttribute('data-pqrs-id', id);
   document.getElementById('modal').classList.remove('oculto');
+  cargarHistorialRespuestas(id);
 }
 
 document.getElementById('filas').addEventListener('change', function (e) {
@@ -252,6 +286,47 @@ document.getElementById('filas').addEventListener('click', function (e) {
 document.getElementById('modal').addEventListener('click', function (e) {
   if (e.target.id === 'modal' || e.target.id === 'cerrarModal') {
     document.getElementById('modal').classList.add('oculto');
+    return;
+  }
+  if (e.target.id === 'mostrarFormularioRespuesta') {
+    document.getElementById('formRespuesta').classList.remove('oculto');
+    document.getElementById('contenidoRespuesta').focus();
+  }
+  if (e.target.id === 'cancelarRespuesta') {
+    document.getElementById('formRespuesta').classList.add('oculto');
+    document.getElementById('contenidoRespuesta').value = '';
+  }
+});
+
+document.getElementById('detalle').addEventListener('submit', async function (e) {
+  if (e.target.id !== 'formRespuesta') return;
+  e.preventDefault();
+  const id = Number(document.getElementById('detalle').getAttribute('data-pqrs-id'));
+  const campo = document.getElementById('contenidoRespuesta');
+  const mensaje = document.getElementById('mensajeRespuesta');
+  const boton = e.target.querySelector('button[type="submit"]');
+  const contenido = campo.value.trim();
+  if (!contenido) {
+    mensaje.textContent = 'Escribe el contenido de la respuesta antes de guardarla.';
+    return;
+  }
+  boton.disabled = true;
+  boton.textContent = 'Guardando...';
+  mensaje.textContent = '';
+  try {
+    await api('/pqrs/' + id + '/respuestas', {
+      method: 'POST',
+      body: JSON.stringify({ contenido: contenido })
+    });
+    campo.value = '';
+    e.target.classList.add('oculto');
+    mensaje.textContent = 'La respuesta se guardó correctamente.';
+    await cargarHistorialRespuestas(id);
+  } catch (error) {
+    if (error.message !== 'sesion') mensaje.textContent = error.message;
+  } finally {
+    boton.disabled = false;
+    boton.textContent = 'Guardar respuesta';
   }
 });
 
