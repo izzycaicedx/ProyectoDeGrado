@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 async function registrar(req, res) {
   try {
@@ -21,6 +22,12 @@ async function registrar(req, res) {
       email,
       password: passwordEncriptada,
       rol_id,
+    });
+
+    await registrarAuditoria({
+      usuarioId: nuevoUsuario.id,
+      accion: 'REGISTRO_USUARIO',
+      detalle: { nombre: nuevoUsuario.nombre, rol_id: nuevoUsuario.rol_id }
     });
 
     return res.status(201).json({
@@ -69,6 +76,12 @@ async function login(req, res) {
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await registrarAuditoria({
+      usuarioId: usuario.id,
+      accion: 'INICIO_SESION',
+      detalle: { resultado: 'Exitoso' }
+    });
 
     return res.json({
       exito: true,
