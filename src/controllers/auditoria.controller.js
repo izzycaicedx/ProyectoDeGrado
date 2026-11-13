@@ -22,8 +22,14 @@ const consultarAuditoria = async (req, res) => {
     }
 
     const registros = await sequelize.query(
-      `SELECT a.id, a.accion, a.detalle, a.fecha_registro,
-              u.nombre AS usuario_nombre,
+      `SELECT a.id, a.usuario_id, a.accion, a.detalle, a.fecha_registro,
+              COALESCE(u.nombre,
+                CASE
+                  WHEN a.accion = 'RADICACION' THEN 'Formulario público'
+                  WHEN a.accion = 'CONSULTA_RADICADO' THEN 'Consulta pública'
+                  ELSE 'Sistema / externo'
+                END
+              ) AS usuario_nombre,
               p.radicado
        FROM auditoria a
        LEFT JOIN usuarios u ON u.id = a.usuario_id
