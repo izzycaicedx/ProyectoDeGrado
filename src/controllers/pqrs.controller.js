@@ -103,6 +103,11 @@ const listarPqrs = async (req, res) => {
   try {
     await marcarVencidos();
     const pqrsList = await Pqrs.findAll({ order: [['fecha_registro', 'DESC']] });
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      accion: 'CONSULTA_LISTADO_PQRS',
+      detalle: { cantidad_resultados: pqrsList.length }
+    });
     return res.status(200).json({
       exito: true,
       mensaje: 'Listado de PQRS obtenido correctamente.',
@@ -130,6 +135,13 @@ const obtenerPqrsPorId = async (req, res) => {
         datos: null
       });
     }
+
+    await registrarAuditoria({
+      usuarioId: req.usuario?.id || null,
+      pqrsId: pqrs.id,
+      accion: 'CONSULTA_PQRS',
+      detalle: { radicado: pqrs.radicado }
+    });
 
     return res.status(200).json({
       exito: true,
@@ -163,6 +175,12 @@ const consultarPorRadicado = async (req, res) => {
         datos: null
       });
     }
+
+    await registrarAuditoria({
+      pqrsId: pqrs.id,
+      accion: 'CONSULTA_RADICADO',
+      detalle: { canal: 'Consulta pública' }
+    });
 
     return res.status(200).json({
       exito: true,
