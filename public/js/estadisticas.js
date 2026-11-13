@@ -349,7 +349,10 @@ formAuditoria.addEventListener('submit', async function (evento) {
       throw new Error(json.mensaje || 'No fue posible consultar la auditoría.');
     }
 
-    pintarAuditoria(json.datos || []);
+    registrosAuditoria = Array.isArray(json.datos) ? json.datos : [];
+    actualizarMetricasAuditoria(registrosAuditoria);
+    cargarOpcionesAccion(registrosAuditoria);
+    limpiarFiltrosAuditoria();
     document.getElementById('auditPasswordView').classList.add('oculto');
     document.getElementById('auditResultsView').classList.remove('oculto');
   } catch (error) {
