@@ -165,16 +165,75 @@ function cerrarModalAuditoria() {
   document.getElementById('auditError').textContent = '';
 }
 
+const ACCIONES_AUDITORIA = {
+  RADICACION: 'Radicación',
+  ASIGNACION: 'Asignación',
+  CLASIFICACION: 'Clasificación',
+  CAMBIO_ESTADO: 'Cambio de estado',
+  CONSULTA_AUDITORIA: 'Consulta del historial',
+  CONSULTA_LISTADO_PQRS: 'Consulta del listado de PQRS',
+  CONSULTA_PQRS: 'Consulta de PQRS',
+  CONSULTA_RADICADO: 'Consulta de radicado',
+  REGISTRO_USUARIO: 'Registro de usuario',
+  INICIO_SESION: 'Inicio de sesión'
+};
+
+function etiquetaAccion(accion) {
+  return ACCIONES_AUDITORIA[accion] || String(accion || 'Actividad').replace(/_/g, ' ').toLocaleLowerCase('es')
+    .replace(/(^|\\s)\\S/g, function (letra) { return letra.toLocaleUpperCase('es'); });
+}
+
 function detalleAuditoria(valor) {
+  if (valor === null || valor === undefined || valor === '') return 'Sin detalle';
+  let datos = valor;
   try {
-    const datos = typeof valor === 'string' ? JSON.parse(valor) : valor;
-    if (datos && datos.estado_anterior && datos.estado_nuevo) {
-      return 'Estado: ' + datos.estado_anterior + ' → ' + datos.estado_nuevo;
-    }
-    return typeof valor === 'string' ? valor : JSON.stringify(valor || {});
+    if (typeof valor === 'string') datos = JSON.parse(valor);
   } catch (error) {
-    return valor || 'Sin detalle';
+    return valor;
   }
+  if (!datos || typeof datos !== 'object' || Array.isArray(datos)) return String(valor);
+
+  const partes = [];
+  const agregar = function (etiqueta, contenido) {
+    if (contenido === null || contenido === undefined || contenido === '') return;
+    partes.push(etiqueta + ': ' + contenido);
+  };
+  const categoria = function (id) { return id === null ? 'Sin clasificar' : 'Categoría #' + id; };
+
+  if ('radicado' in datos) agregar('Radicado', datos.radicado);
+  if ('tipo' in datos) agregar('Tipo de solicitud', datos.tipo);
+  if ('sede' in datos) agregar('Sede', datos.sede);
+  if ('origen' in datos) agregar('Origen', datos.origen);
+  if ('canal' in datos) agregar('Canal', datos.canal);
+  if ('estado_anterior' in datos || 'estado_nuevo' in datos) {
+    agregar('Estado anterior', datos.estado_anterior || 'No disponible');
+    agregar('Estado nuevo', datos.estado_nuevo || 'No disponible');
+  }
+  if ('responsable_anterior' in datos || 'responsable_nuevo' in datos) {
+    agregar('Responsable anterior', datos.responsable_anterior ? 'Usuario #' + datos.responsable_anterior : 'Sin asignar');
+    agregar('Responsable nuevo', datos.responsable_nuevo ? 'Usuario #' + datos.responsable_nuevo : 'Sin asignar');
+  }
+  if ('categoria_anterior' in datos || 'categoria_nueva' in datos) {
+    agregar('Categoría anterior', categoria(datos.categoria_anterior));
+    agregar('Categoría nueva', categoria(datos.categoria_nueva));
+  }
+  if ('cantidad_resultados' in datos) agregar('Registros consultados', datos.cantidad_resultados);
+
+  const conocidas = new Set([
+    'radicado', 'tipo', 'sede', 'origen', 'canal', 'estado_anterior', 'estado_nuevo',
+    'responsable_anterior', 'responsable_nuevo', 'categoria_anterior', 'categoria_nueva',
+    'cantidad_resultados'
+  ]);
+  Object.keys(datos).forEach(function (clave) {
+    if (!conocidas.has(clave)) {
+      const nombre = clave.replace(/_/g, ' ').replace(/(^|\\s)\\S/g, function (letra) {
+        return letra.toLocaleUpperCase('es');
+      });
+      const contenido = datos[clave];
+      if (contenido !== null && typeof contenido !== 'object') agregar(nombre, contenido);
+    }
+  });
+  return partes.length ? partes.join(' · ') : 'Actividad registrada';
 }
 
 let registrosAuditoria = [];
@@ -192,7 +251,7 @@ function actualizarMetricasAuditoria(registros) {
     .filter(function (registro) { return registro.usuario_id !== null && registro.usuario_id !== undefined; })
     .map(function (registro) { return registro.usuario_nombre; }));
   const acciones = new Set(registros.map(function (registro) {
-    return registro.accion || 'Actividad';
+    return etiquetaAccion(registro.accion);
   }));
 
   document.getElementById('auditTotal').textContent = registros.length;
@@ -217,7 +276,7 @@ function cargarOpcionesAccion(registros) {
   acciones.forEach(function (accion) {
     const opcion = document.createElement('option');
     opcion.value = accion;
-    opcion.textContent = accion;
+    opcion.textContent = etiquetaAccion(accion);
     selector.appendChild(opcion);
   });
   selector.value = acciones.includes(seleccionActual) ? seleccionActual : '';
@@ -255,7 +314,7 @@ function pintarAuditoria(registros) {
     const fecha = new Date(registro.fecha_registro);
     const valores = [
       Number.isNaN(fecha.getTime()) ? 'Fecha no disponible' : fecha.toLocaleString('es-CO'),
-      registro.usuario_nombre || 'Usuario no disponible',
+      registro.usuario_nombre || 'Sistema / externo',
       registro.accion || 'Actividad',
       registro.radicado || 'PQRS no disponible',
       detalleAuditoria(registro.detalle)
