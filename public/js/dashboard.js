@@ -33,6 +33,7 @@ async function api(ruta, opciones) {
   const json = await resp.json().catch(function () { return {}; });
   if (resp.status === 401 || resp.status === 403) {
     localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
     location.href = '/login.html';
     throw new Error('sesion');
   }
@@ -392,6 +393,7 @@ document.getElementById('fPeriodo').addEventListener('change', function () { doc
 document.getElementById('fMes').addEventListener('change', pintarTodo);
 document.getElementById('salir').addEventListener('click', function () {
   localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
   location.href = '/login.html';
 });
 
