@@ -7,7 +7,7 @@ async function registrar(req, res) {
   try {
     const { nombre, documento, email, password, rol_id } = req.body;
 
-    if (!nombre || !documento || !email || !password || !rol_id) {
+    if (!nombre || !email || !password || !rol_id) {
       return res.status(400).json({
         exito: false,
         mensaje: 'Todos los campos son obligatorios.',
@@ -15,10 +15,14 @@ async function registrar(req, res) {
     }
 
     const passwordEncriptada = await bcrypt.hash(password, 10);
+    const documentoNormalizado =
+      typeof documento === 'string' && documento.trim()
+        ? documento.trim()
+        : null;
 
     const nuevoUsuario = await Usuario.create({
       nombre,
-      documento,
+      documento: documentoNormalizado,
       email,
       password: passwordEncriptada,
       rol_id,
