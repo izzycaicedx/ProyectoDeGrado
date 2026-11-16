@@ -52,7 +52,7 @@ CREATE TABLE rol_permiso (
 CREATE TABLE usuarios (
     id          SERIAL PRIMARY KEY,
     nombre      VARCHAR(150) NOT NULL,
-    documento   VARCHAR(30)  NOT NULL UNIQUE,
+    documento   VARCHAR(30) UNIQUE,
     email       VARCHAR(150) NOT NULL UNIQUE,
     password    VARCHAR(255) NOT NULL,        -- se guardará encriptada, nunca en texto plano
     rol_id      INTEGER NOT NULL REFERENCES roles(id),
