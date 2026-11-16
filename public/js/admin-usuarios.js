@@ -19,6 +19,7 @@
     const result = await response.json().catch(function () { return {}; });
     if (response.status === 401) {
       localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
       location.href = '/login.html';
       throw new Error('La sesión terminó. Inicia sesión nuevamente.');
     }
@@ -145,6 +146,7 @@
 
   document.getElementById('salir').addEventListener('click', function () {
     localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
     location.href = '/login.html';
   });
 
