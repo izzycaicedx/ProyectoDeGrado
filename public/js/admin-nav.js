@@ -1,19 +1,15 @@
-/* Muestra el acceso administrativo solo cuando el backend confirma el rol 3. */
+/* La visibilidad del enlace es orientativa; el backend siempre valida el rol vigente. */
 (function () {
   const token = localStorage.getItem('token');
+  const roleId = Number(localStorage.getItem('rol_id'));
   const link = document.querySelector('[data-admin-link]');
-  if (!token || !link) return;
 
-  fetch('/api/usuarios', {
-    headers: { Authorization: 'Bearer ' + token }
-  }).then(function (response) {
-    if (response.status === 401) {
-      localStorage.removeItem('token');
-      location.href = '/login.html';
-      return;
-    }
-    if (response.ok) link.classList.remove('oculto');
-  }).catch(function () {
-    // Si la API no está disponible, el enlace permanece oculto.
-  });
+  if (!token) {
+    location.href = '/login.html';
+    return;
+  }
+
+  if (link && roleId === 3) {
+    link.classList.remove('oculto');
+  }
 })();
