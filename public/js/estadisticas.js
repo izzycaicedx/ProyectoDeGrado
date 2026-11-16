@@ -67,6 +67,7 @@ async function api(ruta) {
 
   if (respuesta.status === 401 || respuesta.status === 403) {
     localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
     location.href = '/login.html';
     throw new Error('sesion');
   }
@@ -402,6 +403,7 @@ formAuditoria.addEventListener('submit', async function (evento) {
     }
     if (respuesta.status === 401 || respuesta.status === 403) {
       localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
       location.href = '/login.html';
       return;
     }
@@ -425,6 +427,7 @@ formAuditoria.addEventListener('submit', async function (evento) {
 
 document.getElementById('salir').addEventListener('click', function () {
   localStorage.removeItem('token');
+    localStorage.removeItem('rol_id');
   location.href = '/login.html';
 });
 
