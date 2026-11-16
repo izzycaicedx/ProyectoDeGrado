@@ -1,12 +1,13 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const { registrarAuditoria } = require('../utils/auditoria');
 
 async function registrar(req, res) {
   try {
     const { nombre, documento, email, password, rol_id } = req.body;
 
-    if (!nombre || !documento || !email || !password || !rol_id) {
+    if (!nombre || !email || !password || !rol_id) {
       return res.status(400).json({
         exito: false,
         mensaje: 'Todos los campos son obligatorios.',
@@ -14,13 +15,23 @@ async function registrar(req, res) {
     }
 
     const passwordEncriptada = await bcrypt.hash(password, 10);
+    const documentoNormalizado =
+      typeof documento === 'string' && documento.trim()
+        ? documento.trim()
+        : null;
 
     const nuevoUsuario = await Usuario.create({
       nombre,
-      documento,
+      documento: documentoNormalizado,
       email,
       password: passwordEncriptada,
       rol_id,
+    });
+
+    await registrarAuditoria({
+      usuarioId: nuevoUsuario.id,
+      accion: 'REGISTRO_USUARIO',
+      detalle: { nombre: nuevoUsuario.nombre, rol_id: nuevoUsuario.rol_id }
     });
 
     return res.status(201).json({
@@ -69,6 +80,12 @@ async function login(req, res) {
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await registrarAuditoria({
+      usuarioId: usuario.id,
+      accion: 'INICIO_SESION',
+      detalle: { resultado: 'Exitoso' }
+    });
 
     return res.json({
       exito: true,

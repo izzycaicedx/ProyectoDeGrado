@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Administración de usuarios de AIREC Grupo Médico.">
+  <title>Administración de usuarios | AIREC Grupo Médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="dashboard.html" class="logo-dashboard" aria-label="Volver al panel de PQRS">
+      <img src="https://airec.co/wp-content/uploads/2023/04/Logo-Airec-2023.gif" alt="AIREC Grupo Médico">
+    </a>
+    <div class="sidebar-brand"><span class="brand-name">AIREC</span><span class="brand-caption">GRUPO MÉDICO</span></div>
+    <div class="sidebar-label">GESTIÓN</div>
+    <nav class="sidebar-nav" aria-label="Navegación principal">
+      <a class="sidebar-link" href="dashboard.html"><span class="nav-icon">▦</span><span>Panel de PQRS</span></a>
+      <a class="sidebar-link" href="estadisticas.html"><span class="nav-icon">▥</span><span>Estadísticas</span></a>
+      <a class="sidebar-link active" href="admin-usuarios.html" aria-current="page"><span class="nav-icon">♙</span><span>Administración de usuarios</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-note"><span class="note-dot"></span><div><strong>Acceso restringido</strong><small>Herramientas exclusivas de superadministración</small></div></div>
+      <button type="button" id="salir" class="logout-button"><span class="logout-icon">↗</span>Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb"><a href="dashboard.html">Inicio</a><span class="breadcrumb-separator">/</span><strong>Administración de usuarios</strong></div>
+      <div class="topbar-tag"><span class="status-dot"></span>Superadministración</div>
+    </header>
+    <main>
+      <div class="page-heading">
+        <div><p class="eyebrow">AIREC · CONTROL DE ACCESO</p><h1>Administración de usuarios</h1><p class="page-description">Crea cuentas institucionales y administra los roles de acceso al sistema.</p></div>
+      </div>
+      <div id="adminDenied" class="admin-denied oculto" role="alert">No tienes permisos para acceder a esta sección. Esta función está reservada al rol 3.</div>
+      <div id="adminContent" class="admin-layout oculto">
+        <section class="admin-panel" aria-labelledby="usersTitle">
+          <h2 id="usersTitle">Usuarios registrados</h2>
+          <p class="admin-help">Consulta las cuentas existentes y administra su nivel de acceso. Las contraseñas nunca se muestran.</p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Nombre</th><th>Correo</th><th>Documento</th><th>Rol</th><th>Actualizar</th></tr></thead>
+              <tbody id="usersRows"><tr><td colspan="5">Cargando usuarios...</td></tr></tbody>
+            </table>
+          </div>
+          <p id="usersStatus" class="admin-status" aria-live="polite"></p>
+        </section>
+        <section class="admin-panel" aria-labelledby="createTitle">
+          <h2 id="createTitle">Crear usuario</h2>
+          <p class="admin-help">Registra una cuenta con rol 2 o rol 3. El documento es opcional.</p>
+          <form id="createUserForm" class="admin-form">
+            <div class="admin-field"><label for="userName">Nombre completo</label><input id="userName" name="nombre" maxlength="150" autocomplete="name" required></div>
+            <div class="admin-field"><label for="userEmail">Correo institucional</label><input id="userEmail" name="email" type="email" maxlength="150" autocomplete="email" required></div>
+            <div class="admin-field"><label for="userDocument">Documento (opcional)</label><input id="userDocument" name="documento" maxlength="30" autocomplete="off"></div>
+            <div class="admin-field"><label for="userPassword">Contraseña inicial</label><input id="userPassword" name="password" type="password" minlength="8" autocomplete="new-password" required><small class="admin-help">Mínimo 8 caracteres.</small></div>
+            <div class="admin-field"><label for="userRole">Rol inicial</label><select id="userRole" name="rol_id" required><option value="2">Rol 2 · Gestión</option><option value="3">Rol 3 · Superadministración</option></select></div>
+            <button class="admin-submit" id="createUserButton" type="submit">Crear cuenta</button>
+            <p id="createUserMessage" class="admin-message" role="status"></p>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="js/admin-usuarios.js"></script>
+</body>
+</html>

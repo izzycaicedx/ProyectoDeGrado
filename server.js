@@ -6,6 +6,9 @@ const testRoutes = require('./src/routes/test.routes');
 const pqrsRoutes = require('./src/routes/pqrs.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const estadisticasRoutes = require('./src/routes/estadisticas.routes');
+const auditoriaRoutes = require('./src/routes/auditoria.routes');
+const respuestasRoutes = require('./src/routes/respuestas.routes');
+const usuariosRoutes = require('./src/routes/usuarios.routes');
 
 const app = express();
 
@@ -25,6 +28,9 @@ app.use('/api', testRoutes);
 app.use('/api', pqrsRoutes);
 app.use('/api', authRoutes);
 app.use('/api', estadisticasRoutes);
+app.use('/api', auditoriaRoutes);
+app.use('/api', respuestasRoutes);
+app.use('/api', usuariosRoutes);
 
 const PORT = process.env.PORT || 3000;
 
