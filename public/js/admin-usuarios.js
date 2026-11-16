@@ -19,7 +19,7 @@
     const result = await response.json().catch(function () { return {}; });
     if (response.status === 401) {
       localStorage.removeItem('token');
-    localStorage.removeItem('rol_id');
+      localStorage.removeItem('rol_id');
       location.href = '/login.html';
       throw new Error('La sesión terminó. Inicia sesión nuevamente.');
     }
@@ -45,7 +45,7 @@
     if (!users.length) {
       const row = document.createElement('tr');
       const cell = createCell('No hay usuarios registrados.');
-      cell.colSpan = 5;
+      cell.colSpan = 4;
       row.appendChild(cell);
       rows.appendChild(row);
       return;
@@ -55,7 +55,6 @@
       const row = document.createElement('tr');
       row.appendChild(createCell(user.nombre));
       row.appendChild(createCell(user.email));
-      row.appendChild(createCell(user.documento));
 
       const roleCell = document.createElement('td');
       const roleSelect = document.createElement('select');
