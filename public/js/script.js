@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/pqrs';
+const API_URL = '/api/pqrs';
 const MEDIO_FIJO = 'Pagina web';
 
 const form = document.getElementById('pqrsForm');
